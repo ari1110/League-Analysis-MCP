@@ -1,0 +1,8 @@
+{
+  "mcpServers": [
+    {
+      "name": "league-analysis",
+      "command": ["uvx", "league-analysis-mcp-server"]
+    }
+  ]
+}

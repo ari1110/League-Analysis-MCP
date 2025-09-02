@@ -1,0 +1,26 @@
+# Include configuration files
+recursive-include config *.json
+
+# Include documentation
+include README.md
+include LICENSE
+include CHANGELOG.md
+include MCP_INTEGRATION_GUIDE.md
+
+# Include setup scripts
+include setup_complete.py
+recursive-include utils *.py
+
+# Include test files
+recursive-include test* *.py
+
+# Include example configurations
+recursive-include example_configs *.json
+
+# Include environment template
+include .env.example
+
+# Exclude backup directories and cache
+recursive-exclude * __pycache__
+recursive-exclude * *.py[co]
+exclude src_backup

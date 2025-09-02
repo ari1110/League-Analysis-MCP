@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "league-analysis": {
+      "command": "uvx",
+      "args": ["league-analysis-mcp-server"]
+    }
+  }
+}
