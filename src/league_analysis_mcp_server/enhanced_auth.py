@@ -20,6 +20,9 @@ logger = logging.getLogger(__name__)
 class EnhancedYahooAuthManager:
     """Enhanced Yahoo OAuth authentication manager with token refresh."""
     
+    # IETF standard out-of-band redirect URI for OAuth flows without web callbacks
+    REDIRECT_URI = "urn:ietf:wg:oauth:2.0:oob"
+    
     def __init__(self):
         self.consumer_key = os.getenv('YAHOO_CONSUMER_KEY')
         self.consumer_secret = os.getenv('YAHOO_CONSUMER_SECRET')
@@ -418,11 +421,11 @@ League Analysis MCP - Yahoo Fantasy Sports API Setup
         if not self.consumer_key:
             raise ValueError("Consumer key not configured")
         
-        # Yahoo OAuth 2.0 authorization URL
+        # Yahoo OAuth 2.0 authorization URL with IETF standard OOB redirect
         auth_url = (
             f"https://api.login.yahoo.com/oauth2/request_auth"
             f"?client_id={self.consumer_key}"
-            f"&redirect_uri=oob"
+            f"&redirect_uri={self.REDIRECT_URI}"
             f"&response_type=code"
             f"&language=en-us"
         )
@@ -447,7 +450,7 @@ League Analysis MCP - Yahoo Fantasy Sports API Setup
         data = {
             'grant_type': 'authorization_code',
             'code': verification_code,
-            'redirect_uri': 'oob',
+            'redirect_uri': self.REDIRECT_URI,  # Must match Yahoo Developer app configuration
             'client_id': self.consumer_key,
             'client_secret': self.consumer_secret,
         }

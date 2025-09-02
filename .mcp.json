@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "league-analysis": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": [
+        "league-analysis-mcp-server"
+      ],
+      "env": {}
+    }
+  }
+}
