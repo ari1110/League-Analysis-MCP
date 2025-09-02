@@ -48,13 +48,13 @@ def test_server_tools_without_yahoo():
     print("\nTesting server tools without Yahoo API...")
     
     try:
-        from src.server import mcp, app_state
+        from src.league_analysis_mcp_server.server import mcp, app_state
         
         # Test server info tool (should work without Yahoo API)
         print("Testing get_server_info()...")
         
         # Import the function directly
-        from src.server import get_server_info
+        from src.league_analysis_mcp_server.server import get_server_info
         
         result = get_server_info()
         
@@ -79,7 +79,7 @@ def test_game_ids():
     print("\nTesting game ID mappings...")
     
     try:
-        from src.server import list_available_seasons
+        from src.league_analysis_mcp_server.server import list_available_seasons
         
         # Test each sport
         sports = ["nfl", "nba", "mlb", "nhl"]
@@ -105,7 +105,7 @@ def test_cache_operations():
     print("\nTesting cache operations...")
     
     try:
-        from src.cache import get_cache_manager
+        from src.league_analysis_mcp_server.cache import get_cache_manager
         
         cache_manager = get_cache_manager()
         
