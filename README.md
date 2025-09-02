@@ -75,19 +75,56 @@ This automated script will:
 - ✅ Test the complete integration
 - ✅ Provide usage instructions
 
-### 🔑 Yahoo Developer App Setup
+## 🚀 **NEW! Streamlined Authentication Setup**
 
-If using the PyPI installation, the server will automatically guide you through this setup on first run. For reference:
+**No more complex setup scripts!** Authentication is now handled entirely through conversational MCP tools:
 
-1. **Create Yahoo App:**
-   - Go to [Yahoo Developer Console](https://developer.yahoo.com/apps/)
-   - Create new app:
-     - **Application Type:** Web Application
-     - **Home Page URL:** http://localhost  
-     - **Redirect URI(s):** oob
-   - Copy Consumer Key & Secret
+### **5-Step Setup Process:**
 
-2. **The server handles the rest automatically!**
+1. **Install & Connect** - Add server to your MCP client
+2. **Check Status** - AI assistant runs `check_setup_status()` 
+3. **Create Yahoo App** - AI assistant shows you exactly what to do with `create_yahoo_app()`
+4. **Save Credentials** - AI assistant saves them for you with `save_yahoo_credentials(key, secret)`
+5. **Complete OAuth** - AI assistant guides you through `start_oauth_flow()` and `complete_oauth_flow(code)`
+
+**That's it!** ✨ Everything happens in your conversation with the AI assistant. No file editing, no command line scripts, no leaving the interface.
+
+### **Example User Experience:**
+
+```
+You: "Show me my fantasy league standings"
+
+AI: Let me check that for you. First, I need to check your authentication setup.
+    → Runs check_setup_status()
+    
+AI: I see you need to create a Yahoo Developer app first. Here are the exact steps:
+    → Runs create_yahoo_app()
+    → Shows step-by-step instructions with exact values to use
+
+You: "I created the app! My key is dj0yJmk9... and secret is abc123..."
+
+AI: Perfect! Let me save those credentials for you.
+    → Runs save_yahoo_credentials(key, secret)
+    → Automatically saves to your environment
+
+AI: Great! Now let's complete the OAuth authorization. Please visit this URL:
+    → Runs start_oauth_flow()
+    → Shows authorization URL and clear instructions
+
+You: "I authorized it and got code: xyz789"
+
+AI: Excellent! Let me complete the setup.
+    → Runs complete_oauth_flow("xyz789")
+    
+AI: 🎉 Setup complete! Now let me get your league standings...
+    → Runs get_standings() and shows your data
+```
+
+**Total time: ~2 minutes.** No technical knowledge required!
+
+### 🔧 **Fallback: Manual Setup (Advanced Users)**
+
+If you prefer the traditional approach, you can still use the manual setup scripts. But most users will love the new conversational setup!
 
 ## Usage
 
@@ -184,7 +221,8 @@ After adding to your MCP client:
    - Verify the server starts manually: `uv run python -m src.server`
 
 2. **Authentication errors:**
-   - Run: `uv run python utils/setup_yahoo_auth.py`
+   - Use the new streamlined setup: Ask your AI assistant to run `check_setup_status()`
+   - For advanced users: Run `uv run python utils/setup_yahoo_auth.py`
    - Check your Yahoo Developer app settings
 
 3. **Permission issues:**
@@ -197,9 +235,18 @@ After adding to your MCP client:
 
 ### Available Tools
 
+#### **🔐 Streamlined Authentication Tools** ✨ **NEW!**
+- `check_setup_status()` - Check current authentication state and get next steps
+- `create_yahoo_app()` - Step-by-step Yahoo Developer app creation guide
+- `save_yahoo_credentials(consumer_key, consumer_secret)` - Save Yahoo app credentials
+- `start_oauth_flow()` - Begin OAuth authorization with clear instructions  
+- `complete_oauth_flow(verification_code)` - Complete setup with verification code
+- `test_yahoo_connection()` - Test API connectivity and troubleshoot issues
+- `reset_authentication()` - Clear all auth data to start fresh
+
 #### Basic League Tools
 - `get_server_info()` - Server status and configuration
-- `get_setup_instructions()` - Yahoo API setup help
+- `get_setup_instructions()` - Comprehensive setup help (includes new tools guidance)
 - `list_available_seasons(sport)` - Available historical seasons
 - `get_league_info(league_id, sport, season?)` - League settings and metadata
 - `get_standings(league_id, sport, season?)` - Current or historical standings
@@ -306,7 +353,9 @@ The server includes game ID mappings for seasons 2015-2024 across all supported 
 ### Common Issues
 
 1. **Authentication Error**
-   - Verify Yahoo Consumer Key/Secret in .env
+   - **NEW**: Use streamlined setup by asking AI to run `check_setup_status()`
+   - Try `reset_authentication()` to start fresh
+   - For manual setup: Verify Yahoo Consumer Key/Secret in .env
    - Check app configuration in Yahoo Developer Console
    - Run `get_setup_instructions()` for detailed setup help
 

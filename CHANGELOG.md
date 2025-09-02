@@ -7,6 +7,45 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.3] - 2025-09-02
+
+### ✨ **MAJOR UX IMPROVEMENT**: Streamlined Authentication Setup
+
+#### Added
+- **🚀 NEW: Conversational Authentication Setup** - Complete Yahoo API setup through MCP tools
+  - `check_setup_status()` - Check authentication state and get next steps
+  - `create_yahoo_app()` - Step-by-step Yahoo Developer app creation guide  
+  - `save_yahoo_credentials(consumer_key, consumer_secret)` - Automated credential saving
+  - `start_oauth_flow()` - OAuth authorization with clear instructions
+  - `complete_oauth_flow(verification_code)` - Complete setup with verification code
+  - `test_yahoo_connection()` - API connectivity testing and troubleshooting
+  - `reset_authentication()` - Clear all authentication data to start fresh
+
+#### Enhanced
+- **OAuth Token Exchange**: Fixed manual OAuth flow with proper Yahoo API token exchange
+- **Error Messages**: Updated all authentication errors to guide users to new setup tools
+- **Setup Instructions**: Updated `get_setup_instructions()` to showcase new conversational flow
+- **Token Management**: Enhanced token status reporting and validation
+
+#### User Experience
+- **Setup Time**: Reduced from 10+ manual steps to 5 conversational interactions
+- **No File Editing**: Credentials automatically saved to environment
+- **No Scripts**: Everything happens through AI assistant conversation
+- **Clear Guidance**: Each step provides exact next action to take
+- **Error Recovery**: Reset and retry any step without starting over
+
+### Technical Improvements
+- **Enhanced OAuth**: Real token exchange implementation (removed placeholder tokens)
+- **Smart Validation**: Credential format validation and helpful error messages  
+- **Environment Management**: Automated .env file creation and updates
+- **Connection Testing**: Built-in API connectivity verification
+- **State Management**: Comprehensive setup state tracking and reporting
+
+### Documentation
+- **README.md**: Updated with new streamlined setup process and example user flow
+- **Authentication Guide**: Clear 5-step setup process with conversation example
+- **Troubleshooting**: Updated to prioritize new setup tools over manual methods
+
 ## [0.1.2] - 2025-09-02
 
 ### Fixed

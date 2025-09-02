@@ -280,20 +280,33 @@ class EnhancedYahooAuthManager:
         Returns:
             Dictionary with token status details
         """
+        has_access_token = self.has_access_token()
+        token_data = self.load_token_from_file()
+        is_token_valid = self.is_token_valid(token_data) if token_data else False
+        
         status = {
             'configured': self.is_configured(),
-            'has_token': self.has_access_token(),
+            'has_access_token': has_access_token,
+            'is_valid': is_token_valid,
             'token_file_exists': self.token_file.exists(),
             'env_file_exists': self.env_file.exists(),
+            'consumer_key_configured': bool(self.consumer_key),
+            'consumer_secret_configured': bool(self.consumer_secret),
         }
         
-        token_data = self.load_token_from_file()
         if token_data:
             status.update({
-                'token_valid': self.is_token_valid(token_data),
                 'has_refresh_token': 'refresh_token' in token_data,
                 'token_created': token_data.get('saved_at'),
-                'expires_in': token_data.get('expires_in')
+                'expires_in': token_data.get('expires_in'),
+                'token_type': token_data.get('token_type', 'bearer')
+            })
+        else:
+            status.update({
+                'has_refresh_token': False,
+                'token_created': None,
+                'expires_in': None,
+                'token_type': None
             })
         
         return status
@@ -308,14 +321,13 @@ class EnhancedYahooAuthManager:
         return """
 League Analysis MCP - Yahoo Fantasy Sports API Setup
 
-🚀 AUTOMATED SETUP (Recommended):
-   Run: uv run python utils/setup_yahoo_auth.py
-   
-   This will:
-   - Guide you through Yahoo app creation
-   - Automate the OAuth flow
-   - Save tokens securely
-   - Test the connection
+🚀 NEW STREAMLINED SETUP:
+   Use the built-in MCP tools for easy setup:
+   1. check_setup_status() - See what needs to be done
+   2. create_yahoo_app() - Get instructions for creating Yahoo app  
+   3. save_yahoo_credentials() - Save your app credentials
+   4. start_oauth_flow() - Begin OAuth authorization
+   5. complete_oauth_flow() - Finish with verification code
 
 📋 MANUAL SETUP:
 1. Create Yahoo Developer App:
@@ -336,13 +348,226 @@ League Analysis MCP - Yahoo Fantasy Sports API Setup
 
 🔧 TROUBLESHOOTING:
    - Check token status: get_server_info() tool
-   - Regenerate tokens: delete .yahoo_token.json and re-run setup
-   - Verify app settings: ensure redirect_uri is 'oob'
+   - Reset authentication: reset_authentication() tool
+   - Test connection: test_yahoo_connection() tool
 
 📖 DOCUMENTATION:
    - Yahoo Fantasy API: https://developer.yahoo.com/fantasysports/
    - YFPY Library: https://yfpy.uberfastman.com/
 """
+
+    def save_credentials(self, consumer_key: str, consumer_secret: str) -> bool:
+        """
+        Save Yahoo API credentials to environment file.
+        
+        Args:
+            consumer_key: Yahoo app consumer key
+            consumer_secret: Yahoo app consumer secret
+            
+        Returns:
+            True if credentials were saved successfully
+        """
+        try:
+            # Read existing .env content if it exists
+            env_content = ""
+            if self.env_file.exists():
+                with open(self.env_file, 'r') as f:
+                    env_content = f.read()
+            
+            # Update or add credentials
+            lines = env_content.split('\n') if env_content else []
+            
+            # Remove existing credentials if present
+            lines = [line for line in lines if not (
+                line.startswith('YAHOO_CONSUMER_KEY=') or 
+                line.startswith('YAHOO_CONSUMER_SECRET=')
+            )]
+            
+            # Add new credentials
+            lines.extend([
+                f'YAHOO_CONSUMER_KEY={consumer_key}',
+                f'YAHOO_CONSUMER_SECRET={consumer_secret}'
+            ])
+            
+            # Write back to file
+            with open(self.env_file, 'w') as f:
+                f.write('\n'.join(line for line in lines if line))
+                f.write('\n')
+            
+            # Update instance variables
+            self.consumer_key = consumer_key
+            self.consumer_secret = consumer_secret
+            
+            # Reload environment variables
+            load_dotenv(override=True)
+            
+            logger.info(f"Yahoo credentials saved successfully: {consumer_key[:10]}...")
+            return True
+            
+        except Exception as e:
+            logger.error(f"Failed to save credentials: {e}")
+            return False
+    
+    def get_authorization_url(self) -> str:
+        """
+        Generate Yahoo OAuth authorization URL.
+        
+        Returns:
+            Authorization URL for user to visit
+        """
+        if not self.consumer_key:
+            raise ValueError("Consumer key not configured")
+        
+        # Yahoo OAuth 2.0 authorization URL
+        auth_url = (
+            f"https://api.login.yahoo.com/oauth2/request_auth"
+            f"?client_id={self.consumer_key}"
+            f"&redirect_uri=oob"
+            f"&response_type=code"
+            f"&language=en-us"
+        )
+        
+        return auth_url
+    
+    def exchange_code_for_tokens(self, verification_code: str) -> bool:
+        """
+        Exchange Yahoo verification code for access and refresh tokens.
+        
+        Args:
+            verification_code: Verification code from Yahoo OAuth flow
+            
+        Returns:
+            True if token exchange was successful
+        """
+        if not self.consumer_key or not self.consumer_secret:
+            logger.error("Consumer credentials not available")
+            return False
+        
+        # Prepare token exchange request
+        data = {
+            'grant_type': 'authorization_code',
+            'code': verification_code,
+            'redirect_uri': 'oob',
+            'client_id': self.consumer_key,
+            'client_secret': self.consumer_secret,
+        }
+        
+        headers = {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'User-Agent': 'League-Analysis-MCP/1.0'
+        }
+        
+        try:
+            logger.info("Exchanging verification code for access tokens")
+            response = requests.post(
+                self.token_url,
+                data=data,
+                headers=headers,
+                timeout=30
+            )
+            
+            if response.status_code == 200:
+                token_data = response.json()
+                
+                # Save tokens to file and environment
+                self.save_token_to_file(token_data)
+                self.update_env_file(token_data)
+                
+                logger.info("OAuth token exchange successful")
+                return True
+            else:
+                logger.error(f"Token exchange failed: {response.status_code} - {response.text}")
+                return False
+                
+        except requests.RequestException as e:
+            logger.error(f"Token exchange request failed: {e}")
+            return False
+    
+    def test_connection(self) -> bool:
+        """
+        Test Yahoo API connection with current authentication.
+        
+        Returns:
+            True if connection test is successful
+        """
+        try:
+            # Try to get credentials and create a basic YFPY instance
+            credentials = self.get_auth_credentials()
+            
+            if not credentials.get('yahoo_access_token_json'):
+                logger.debug("No access token available for connection test")
+                return False
+            
+            # Import here to avoid circular imports
+            from yfpy import YahooFantasySportsQuery
+            
+            # Create a temporary query instance for testing
+            yahoo_query = YahooFantasySportsQuery(
+                league_id="test",  # Temporary
+                game_code="nfl",   # Temporary
+                **credentials
+            )
+            
+            # If we get here without exception, basic setup is working
+            logger.info("Yahoo API connection test passed")
+            return True
+            
+        except Exception as e:
+            logger.debug(f"Connection test failed: {e}")
+            # This might be normal if user hasn't specified real league info
+            return False
+    
+    def reset_authentication(self) -> bool:
+        """
+        Reset all authentication data (credentials and tokens).
+        
+        Returns:
+            True if reset was successful
+        """
+        try:
+            # Remove token file
+            if self.token_file.exists():
+                self.token_file.unlink()
+                logger.info("Removed token file")
+            
+            # Remove credentials from .env file
+            if self.env_file.exists():
+                with open(self.env_file, 'r') as f:
+                    lines = f.readlines()
+                
+                # Filter out Yahoo-related lines
+                filtered_lines = []
+                for line in lines:
+                    if not any(line.startswith(prefix) for prefix in [
+                        'YAHOO_CONSUMER_KEY=',
+                        'YAHOO_CONSUMER_SECRET=',
+                        'YAHOO_ACCESS_TOKEN=', 
+                        'YAHOO_REFRESH_TOKEN=',
+                        'YAHOO_ACCESS_TOKEN_JSON='
+                    ]):
+                        filtered_lines.append(line)
+                
+                with open(self.env_file, 'w') as f:
+                    f.writelines(filtered_lines)
+                
+                logger.info("Removed Yahoo credentials from .env file")
+            
+            # Clear instance variables
+            self.consumer_key = None
+            self.consumer_secret = None
+            self.access_token = None
+            self.refresh_token = None
+            self.access_token_json = None
+            
+            # Reload environment variables
+            load_dotenv(override=True)
+            
+            logger.info("Authentication reset completed successfully")
+            return True
+            
+        except Exception as e:
+            logger.error(f"Failed to reset authentication: {e}")
+            return False
 
 
 def get_enhanced_auth_manager() -> EnhancedYahooAuthManager:

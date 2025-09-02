@@ -23,7 +23,7 @@ def register_tools(mcp: FastMCP, app_state: Dict[str, Any]):
         cache_manager = app_state["cache_manager"]
         
         if not auth_manager.is_configured():
-            raise ValueError("Yahoo authentication not configured. Run get_setup_instructions for help.")
+            raise ValueError("Yahoo authentication not configured. Run check_setup_status() to begin setup.")
         
         auth_credentials = auth_manager.get_auth_credentials()
         
