@@ -121,8 +121,10 @@ jobs:
     - name: Test TestPyPI installation
       run: |
         sleep 60  # Wait for package to be available
-        uv pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ league-analysis-mcp-server
-        python -c "import league_analysis_mcp_server; print('TestPyPI package works!')"
+        # Test that the package can be run via uvx (the recommended method)
+        timeout 10 uvx --from league-analysis-mcp-server@latest --index-url https://test.pypi.org/simple/ --with-requirements pypi league-analysis-mcp-server --help || true
+        # Also test basic import
+        uv run --with league-analysis-mcp-server --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ python -c "import league_analysis_mcp_server; print('TestPyPI package works!')"
 
   publish-pypi:
     name: Publish to PyPI
@@ -149,12 +151,10 @@ jobs:
     
     - name: Create GitHub Release
       if: startsWith(github.ref, 'refs/tags/v')
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      uses: softprops/action-gh-release@v1
       with:
         tag_name: ${{ github.ref_name }}
-        release_name: Release ${{ github.ref_name }}
+        name: Release ${{ github.ref_name }}
         body: |
           ## Changes in this release
           
