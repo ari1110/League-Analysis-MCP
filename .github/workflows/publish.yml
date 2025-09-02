@@ -53,13 +53,7 @@ jobs:
         uv pip install "$WHEEL_FILE"
         uv pip show league-analysis-mcp-server
         echo "Testing package import..."
-        python -c "import league_analysis_mcp_server; print('Package imported successfully')" || {
-          echo "Import failed, running diagnostics..."
-          python -c "import sys; print('Python executable:', sys.executable)"
-          python -c "import site; print('Site packages:', site.getsitepackages())"
-          uv pip list | grep league || echo "League package not found in pip list"
-          exit 1
-        }
+        uv run python -c "import league_analysis_mcp_server; print('Package imported successfully')"
 
   build:
     name: Build Package
@@ -93,13 +87,7 @@ jobs:
         uv pip install "$WHEEL_FILE"
         uv pip show league-analysis-mcp-server
         echo "Testing package import..."
-        python -c "import league_analysis_mcp_server; print('Built package works!')" || {
-          echo "Import failed, running diagnostics..."
-          python -c "import sys; print('Python executable:', sys.executable)"
-          python -c "import site; print('Site packages:', site.getsitepackages())"
-          uv pip list | grep league || echo "League package not found in pip list"
-          exit 1
-        }
+        uv run python -c "import league_analysis_mcp_server; print('Built package works!')"
     
     - name: Upload build artifacts
       uses: actions/upload-artifact@v4
