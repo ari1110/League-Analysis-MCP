@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "league-analysis-mcp-server"
-version = "0.1.0"
+version = "0.1.2"
 description = "Model Context Protocol server for Yahoo Fantasy Sports API with advanced historical analysis and manager profiling"
 authors = [{name = "League Analysis MCP", email = "info@league-analysis-mcp.com"}]
 license = {text = "MIT"}

@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.2] - 2025-09-02
+
+### Fixed
+- GitHub Actions workflow publishing issues
+- UV publish command configuration for TestPyPI
+- Python environment compatibility in CI/CD pipeline 
+- YAML syntax errors in publish workflow
+- Package installation wildcard expansion in GitHub Actions
+
+### Changed
+- Removed GitHub environment references from workflow for simplified deployment
+- Improved error handling in automated publishing pipeline
+
 ## [0.1.0] - 2024-09-02
 
 ### Added
