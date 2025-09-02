@@ -20,7 +20,7 @@ def test_server_import():
         os.environ['YAHOO_CONSUMER_KEY'] = 'test_key'
         os.environ['YAHOO_CONSUMER_SECRET'] = 'test_secret'
         
-        from src import server
+        from src.league_analysis_mcp_server import server
         print("PASS - Server module imported successfully")
         print(f"   - MCP instance: {type(server.mcp)}")
         print(f"   - App state keys: {list(server.app_state.keys())}")

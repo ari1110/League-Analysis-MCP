@@ -47,8 +47,10 @@ jobs:
       run: uv build
     
     - name: Test package installation
+      shell: bash
       run: |
-        uv pip install dist/*.whl
+        WHEEL_FILE=$(ls dist/*.whl)
+        uv pip install "$WHEEL_FILE"
         python -c "import league_analysis_mcp_server; print('Package imported successfully')"
 
   build:
@@ -76,9 +78,11 @@ jobs:
       run: uv build
     
     - name: Verify build
+      shell: bash
       run: |
         ls -la dist/
-        uv pip install dist/*.whl
+        WHEEL_FILE=$(ls dist/*.whl)
+        uv pip install "$WHEEL_FILE"
         python -c "import league_analysis_mcp_server; print('Built package works!')"
     
     - name: Upload build artifacts
