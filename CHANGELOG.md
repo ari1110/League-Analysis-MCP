@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.4] - 2025-09-02
+
+### 🔧 **CRITICAL FIX**: Yahoo OAuth Redirect URI
+
+#### Fixed
+- **OAuth Authentication Failure**: Fixed `complete_oauth_flow()` hanging/failing due to redirect URI mismatch
+- **Redirect URI**: Changed from `'oob'` to `'urn:ietf:wg:oauth:2.0:oob'` (IETF standard)
+- **Token Exchange**: OAuth token requests now match Yahoo Developer app configuration
+- **Setup Instructions**: Updated `create_yahoo_app()` to specify correct redirect URI format
+
+#### Technical Details
+- Added `REDIRECT_URI` constant for consistency across authorization and token exchange
+- Updated both `get_authorization_url()` and `exchange_code_for_tokens()` methods
+- Ensures redirect_uri parameter exactly matches Yahoo Developer Console configuration
+
+**Impact**: Resolves authentication setup failures where users experienced timeouts or "No result received" errors during OAuth completion.
+
 ## [0.1.3] - 2025-09-02
 
 ### ✨ **MAJOR UX IMPROVEMENT**: Streamlined Authentication Setup
