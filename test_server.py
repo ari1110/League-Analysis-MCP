@@ -16,11 +16,11 @@ def test_imports():
     print("Testing module imports...")
     
     try:
-        from src import auth, cache, server
-        from src.tools import register_tools  
-        from src.resources import register_resources
-        from src.historical import register_historical_tools
-        from src.analytics import register_analytics_tools
+        from src.league_analysis_mcp_server import auth, cache, server
+        from src.league_analysis_mcp_server.tools import register_tools  
+        from src.league_analysis_mcp_server.resources import register_resources
+        from src.league_analysis_mcp_server.historical import register_historical_tools
+        from src.league_analysis_mcp_server.analytics import register_analytics_tools
         print("PASS - All modules imported successfully")
         return True
     except ImportError as e:
@@ -54,7 +54,7 @@ def test_auth_manager():
     print("Testing authentication manager...")
     
     try:
-        from src.auth import YahooAuthManager
+        from src.league_analysis_mcp_server.auth import YahooAuthManager
         
         auth_manager = YahooAuthManager()
         
@@ -78,7 +78,7 @@ def test_cache_manager():
     print("Testing cache manager...")
     
     try:
-        from src.cache import CacheManager
+        from src.league_analysis_mcp_server.cache import CacheManager
         
         cache = CacheManager()
         
@@ -107,7 +107,7 @@ def test_server_initialization():
     
     try:
         # Test that we can load the server module and configuration
-        from src.server import config, game_ids, app_state
+        from src.league_analysis_mcp_server.server import config, game_ids, app_state
         
         print(f"PASS - Server config loaded")
         print(f"   - Server name: {config['server']['name']}")

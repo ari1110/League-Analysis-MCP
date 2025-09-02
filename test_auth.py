@@ -19,7 +19,7 @@ def test_auth_flow():
     os.environ['YAHOO_CONSUMER_SECRET'] = 'fake_secret_67890'
     
     try:
-        from src.auth import YahooAuthManager
+        from src.league_analysis_mcp_server.auth import YahooAuthManager
         
         auth_manager = YahooAuthManager()
         

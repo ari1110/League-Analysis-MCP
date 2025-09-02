@@ -38,7 +38,7 @@ def test_mcp_tools_registration():
     print("\nTesting MCP tools registration...")
     
     try:
-        from src.server import mcp
+        from src.league_analysis_mcp_server.server import mcp
         
         # Check if the server has tools registered
         # This is a bit tricky since FastMCP may not expose tools directly
@@ -57,7 +57,7 @@ def test_server_initialization():
     print("\nTesting server initialization...")
     
     try:
-        from src.server import initialize_server
+        from src.league_analysis_mcp_server.server import initialize_server
         
         # Run initialization (this registers tools/resources)
         initialize_server()
@@ -76,7 +76,7 @@ def test_individual_tools():
     print("\nTesting individual tool functions...")
     
     try:
-        from src.server import get_server_info, list_available_seasons
+        from src.league_analysis_mcp_server.server import get_server_info, list_available_seasons
         
         # Test get_server_info
         server_info = get_server_info()

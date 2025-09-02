@@ -134,7 +134,7 @@ def check_server_capabilities():
         # Import our server modules to check capabilities
         sys.path.insert(0, str(Path(__file__).parent / "src"))
         
-        from src.server import mcp, app_state
+        from src.league_analysis_mcp_server.server import mcp, app_state
         
         print("Server capabilities:")
         print(f"  - Server name: {mcp.name}")
