@@ -461,39 +461,28 @@ League Analysis MCP - Yahoo Fantasy Sports API Setup
         }
         
         try:
-            print(f"DEBUG: About to make POST request to {self.token_url}")
-            print(f"DEBUG: Using redirect_uri: {self.REDIRECT_URI}")
             logger.info("Exchanging verification code for access tokens")
-            
-            print("DEBUG: Making HTTP POST request to Yahoo...")
             response = requests.post(
                 self.token_url,
                 data=data,
                 headers=headers,
                 timeout=30
             )
-            print(f"DEBUG: Received response with status code: {response.status_code}")
             
             if response.status_code == 200:
-                print("DEBUG: Status 200 - parsing JSON response...")
                 token_data = response.json()
                 
-                print("DEBUG: About to save tokens to file...")
                 # Save tokens to file and environment
                 self.save_token_to_file(token_data)
-                print("DEBUG: About to update env file...")
                 self.update_env_file(token_data)
                 
-                print("DEBUG: Token exchange completed successfully")
                 logger.info("OAuth token exchange successful")
                 return True
             else:
-                print(f"DEBUG: Non-200 status code: {response.status_code}")
                 logger.error(f"Token exchange failed: {response.status_code} - {response.text}")
                 return False
                 
         except requests.RequestException as e:
-            print(f"DEBUG: Request exception occurred: {e}")
             logger.error(f"Token exchange request failed: {e}")
             return False
     

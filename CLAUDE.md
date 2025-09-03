@@ -50,9 +50,11 @@ Built on **FastMCP 2.0** - a high-level Model Context Protocol framework. The se
 - Global app state containing auth manager, cache manager, config, and game ID mappings
 - Tool and resource registration
 
-**Authentication System** (`enhanced_auth.py` + `auth.py`):
-- **Enhanced Auth Manager**: Primary OAuth handler with token refresh capabilities
-- Uses `http://localhost:8080` redirect URI (must match Yahoo Developer app)
+**Authentication System** (`enhanced_auth.py` + `oauth_callback_server.py`):
+- **Enhanced Auth Manager**: Primary OAuth handler with token refresh capabilities  
+- **OAuth Callback Server**: Automated authorization code capture via HTTPS localhost server
+- Uses `https://localhost:8080/` redirect URI (must match Yahoo Developer app)
+- **Two OAuth Methods**: Manual (copy-paste code) and Automated (callback server)
 - Conversational setup through MCP tools (check_setup_status, create_yahoo_app, etc.)
 - Environment variable storage with .env support
 
@@ -83,8 +85,31 @@ Request → Authentication Check → Cache Lookup → Yahoo API Call (if needed)
 
 ### Authentication Development
 - All new auth features should use the Enhanced Auth Manager
-- OAuth redirect URI is hardcoded to `http://localhost:8080` - changes require Yahoo Developer app reconfiguration
+- **OAuth redirect URI**: `https://localhost:8080/` - must match Yahoo Developer app configuration exactly
+- **Automated OAuth**: Preferred method using `start_automated_oauth_flow()` - creates HTTPS server to capture code
+- **Manual OAuth**: Fallback using `start_oauth_flow()` + `complete_oauth_flow(code)` 
+- **Token separation**: OAuth token exchange is isolated from YFPY connection testing for better debugging
 - Use conversational MCP tools for user setup rather than command-line scripts
+
+### OAuth Setup Methods
+**Method 1: Automated (Recommended)**
+```
+1. save_yahoo_credentials(key, secret)
+2. start_automated_oauth_flow()  # Opens browser, captures code automatically
+```
+
+**Method 2: Manual (Fallback)**  
+```
+1. save_yahoo_credentials(key, secret)
+2. start_oauth_flow()  # Get authorization URL
+3. Visit URL, get code manually
+4. complete_oauth_flow(verification_code)
+```
+
+**Method 3: Connection Testing (Separate)**
+```
+5. test_yahoo_connection()  # Test YFPY integration after token exchange
+```
 
 ### Caching Strategy
 - Historical data (draft results, past seasons): Cache permanently
@@ -121,11 +146,41 @@ Supported sports: `nfl`, `nba`, `mlb`, `nhl`
 - Include proper type hints for all parameters and return values
 - Cache expensive operations, especially multi-season historical queries
 
+## OAuth Troubleshooting
+
+### Common Issues and Solutions
+
+**OAuth Timeout/Hanging Issues:**
+- **Cause**: Usually redirect URI mismatch between code and Yahoo Developer app
+- **Solution**: Ensure Yahoo app has `https://localhost:8080/` as redirect URI
+- **Verification**: Check authorization URL contains correct redirect_uri parameter
+
+**SSL Certificate Issues:**
+- **Automated flow fails**: Install `cryptography` package: `uv add cryptography`
+- **Certificate errors**: Browser may show security warnings for self-signed certificate (safe to proceed)
+- **Port conflicts**: Ensure nothing else uses port 8080
+
+**Yahoo Developer App Configuration:**
+- **Redirect URI**: Must be exactly `https://localhost:8080/` (with trailing slash)
+- **Alternative**: Can also register `urn:ietf:wg:oauth:2.0:oob` for manual flow
+- **App Type**: Web Application (not mobile or desktop)
+
+**Token Exchange Errors:**
+- **400 Bad Request**: Usually redirect URI mismatch or expired code  
+- **401 Unauthorized**: Invalid consumer key/secret
+- **Network timeouts**: Check firewall/proxy settings
+
+**Connection Test Failures:**
+- **Expected behavior**: Connection test may fail even with valid tokens
+- **YFPY requirements**: Needs additional token fields that Yahoo doesn't always provide
+- **Workaround**: Token exchange success = OAuth working, connection test = YFPY compatibility
+
 ## Key Dependencies
 - **FastMCP 2.0**: MCP framework
 - **YFPY 16.0+**: Yahoo Fantasy Sports API wrapper  
 - **Pydantic 2.0+**: Data validation and settings management
 - **Pandas 2.0+**: Data analysis and transformation
+- **Cryptography 3.0+**: SSL certificate generation for OAuth callback server
 - **UV**: Package management and virtual environment
 
 ## Configuration Notes

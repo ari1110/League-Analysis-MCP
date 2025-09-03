@@ -15,6 +15,7 @@ from .enhanced_auth import get_enhanced_auth_manager
 from .cache import get_cache_manager
 from .tools import register_tools
 from .resources import register_resources
+from .oauth_callback_server import automated_oauth_flow
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -396,19 +397,14 @@ def complete_oauth_flow(verification_code: str) -> Dict[str, Any]:
     auth_manager = app_state["auth_manager"]
     
     try:
-        print("DEBUG: Starting token exchange process...")
-        
         # Exchange verification code for tokens
-        print("DEBUG: About to call exchange_code_for_tokens...")
         success = auth_manager.exchange_code_for_tokens(verification_code)
-        print(f"DEBUG: Token exchange result: {success}")
         
         if success:
-            print("DEBUG: Token exchange successful, skipping connection test for now")
             return {
                 "status": "success",
-                "message": "🎉 Yahoo OAuth token exchange completed successfully!",
-                "details": "Tokens have been saved. Connection testing has been separated for better debugging.",
+                "message": "Yahoo OAuth token exchange completed successfully!",
+                "details": "Tokens have been saved. Connection testing has been separated for better isolation.",
                 "next_steps": [
                     "Token exchange is complete! Next steps:",
                     "• Test your connection using test_yahoo_connection() tool",
@@ -418,7 +414,6 @@ def complete_oauth_flow(verification_code: str) -> Dict[str, Any]:
                 "note": "Connection testing removed to isolate OAuth token exchange from YFPY initialization"
             }
         else:
-            print("DEBUG: Token exchange failed")
             return {
                 "status": "error",
                 "message": "Failed to exchange verification code for tokens",
@@ -487,6 +482,63 @@ def test_yahoo_connection() -> Dict[str, Any]:
                 "1. Check if your tokens are expired (they refresh automatically)",
                 "2. Verify your Yahoo account has access to fantasy leagues",
                 "3. Try refresh_yahoo_token() to force a token refresh"
+            ]
+        }
+
+
+@mcp.tool()
+def start_automated_oauth_flow(open_browser: bool = True, timeout: int = 300) -> Dict[str, Any]:
+    """
+    Start automated OAuth flow with callback server to capture authorization code automatically.
+    
+    This creates an HTTPS server on localhost:8080, opens your browser to Yahoo's authorization page,
+    and automatically captures the authorization code when Yahoo redirects back.
+    
+    Args:
+        open_browser: Whether to automatically open the browser (default: True)
+        timeout: Timeout in seconds to wait for authorization (default: 300 = 5 minutes)
+    
+    Returns:
+        Complete OAuth setup status including token exchange results
+    """
+    auth_manager = app_state["auth_manager"]
+    
+    if not auth_manager.consumer_key:
+        return {
+            "status": "error",
+            "message": "Consumer key not found. Save credentials first.",
+            "next_step": "Run save_yahoo_credentials() with your app credentials"
+        }
+    
+    try:
+        # Run automated OAuth flow
+        result = automated_oauth_flow(
+            auth_manager=auth_manager,
+            open_browser=open_browser, 
+            timeout=timeout
+        )
+        
+        # If successful, also provide next steps
+        if result["status"] == "success":
+            result["next_steps"] = [
+                "Automated OAuth completed! Your tokens are saved and ready to use.",
+                "• Test your connection with test_yahoo_connection()",
+                "• Try get_league_info(league_id, sport) with your league ID",
+                "• All fantasy sports tools are now available"
+            ]
+        
+        return result
+        
+    except Exception as e:
+        logger.error(f"Automated OAuth flow failed: {e}")
+        return {
+            "status": "error",
+            "message": f"Automated OAuth flow failed: {str(e)}",
+            "fallback": "You can still use the manual OAuth flow with start_oauth_flow()",
+            "troubleshooting": [
+                "• Make sure your Yahoo app redirect URI is set to: https://localhost:8080/",
+                "• Check that no other service is using port 8080",
+                "• Try the manual flow: start_oauth_flow() then complete_oauth_flow(code)"
             ]
         }
 
