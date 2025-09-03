@@ -77,17 +77,64 @@ This automated script will:
 
 ## 🚀 **NEW! Streamlined Authentication Setup**
 
-**No more complex setup scripts!** Authentication is now handled entirely through conversational MCP tools:
+**No more complex setup scripts!** Authentication is now handled entirely through conversational MCP tools with **two OAuth options**:
 
-### **5-Step Setup Process:**
+### **Option 1: Automated OAuth (Recommended)**
 
+**5-Step Setup Process:**
 1. **Install & Connect** - Add server to your MCP client
 2. **Check Status** - AI assistant runs `check_setup_status()` 
 3. **Create Yahoo App** - AI assistant shows you exactly what to do with `create_yahoo_app()`
 4. **Save Credentials** - AI assistant saves them for you with `save_yahoo_credentials(key, secret)`
-5. **Complete OAuth** - AI assistant guides you through `start_oauth_flow()` and `complete_oauth_flow(code)`
+5. **Automated OAuth** - AI assistant runs `start_automated_oauth_flow()` for fully automated setup
+
+**✨ Fully Automated Experience:**
+- Browser opens automatically to Yahoo authorization page
+- You sign in and authorize the app  
+- HTTPS callback server automatically captures the authorization code
+- Tokens are saved and exchanged automatically
+- Success page displays and auto-closes
+- **Total time: ~30 seconds!**
+
+### **Option 2: Manual OAuth (Fallback)**
+
+**5-Step Setup Process:**
+1. **Install & Connect** - Add server to your MCP client
+2. **Check Status** - AI assistant runs `check_setup_status()` 
+3. **Create Yahoo App** - AI assistant shows you exactly what to do with `create_yahoo_app()`
+4. **Save Credentials** - AI assistant saves them for you with `save_yahoo_credentials(key, secret)`
+5. **Manual OAuth** - AI assistant guides you through `start_oauth_flow()` and `complete_oauth_flow(code)`
+
+**📋 Manual Code Entry:**
+- AI provides authorization URL
+- You visit URL, sign in, and get verification code
+- You provide the code to the AI assistant
+- AI completes token exchange
 
 **That's it!** ✨ Everything happens in your conversation with the AI assistant. No file editing, no command line scripts, no leaving the interface.
+
+### **🔑 Important OAuth Requirements**
+
+**For Best Results:**
+- **✅ Sign into Yahoo first**: Before starting OAuth, sign into [yahoo.com](https://yahoo.com) in your browser
+- **✅ Use the same account**: Sign in with the Yahoo account that has your fantasy leagues  
+- **✅ Stay signed in**: Keep your Yahoo session active during the OAuth process
+
+**Why this matters:**
+- **Automated OAuth works best** when you're already signed into Yahoo
+- **Fresh logins during OAuth** can sometimes cause Yahoo's "uh-oh" errors
+- **Existing sessions** provide the smoothest authorization experience
+
+**SSL Certificate Handling:**
+When using automated OAuth, your browser may show a security warning for `https://localhost:8080`. This is normal and safe:
+1. Click **"Advanced"** or **"Show Details"**
+2. Click **"Proceed to localhost (unsafe)"** or similar
+3. The success page will display and auto-close after 3 seconds
+
+**Troubleshooting:**
+- **"uh-oh" errors**: Try signing into Yahoo first, then retry the OAuth flow
+- **SSL warnings**: These are normal for self-signed certificates - safe to proceed
+- **Timeouts**: Use manual OAuth flow as fallback if automated flow has issues
 
 ### **Example User Experience:**
 
@@ -239,8 +286,9 @@ After adding to your MCP client:
 - `check_setup_status()` - Check current authentication state and get next steps
 - `create_yahoo_app()` - Step-by-step Yahoo Developer app creation guide
 - `save_yahoo_credentials(consumer_key, consumer_secret)` - Save Yahoo app credentials
-- `start_oauth_flow()` - Begin OAuth authorization with clear instructions  
-- `complete_oauth_flow(verification_code)` - Complete setup with verification code
+- **`start_automated_oauth_flow()` - 🚀 Fully automated OAuth with callback server (recommended)**
+- `start_oauth_flow()` - Begin manual OAuth authorization with clear instructions  
+- `complete_oauth_flow(verification_code)` - Complete manual setup with verification code
 - `test_yahoo_connection()` - Test API connectivity and troubleshoot issues
 - `reset_authentication()` - Clear all auth data to start fresh
 
@@ -352,12 +400,20 @@ The server includes game ID mappings for seasons 2015-2024 across all supported 
 
 ### Common Issues
 
-1. **Authentication Error**
-   - **NEW**: Use streamlined setup by asking AI to run `check_setup_status()`
-   - Try `reset_authentication()` to start fresh
-   - For manual setup: Verify Yahoo Consumer Key/Secret in .env
-   - Check app configuration in Yahoo Developer Console
-   - Run `get_setup_instructions()` for detailed setup help
+1. **Authentication Errors**
+   - **✅ NEW**: Use streamlined setup by asking AI to run `check_setup_status()`
+   - **🚀 Recommended**: Try `start_automated_oauth_flow()` for easiest setup
+   - **⚠️ "uh-oh" errors**: Sign into yahoo.com first, then retry OAuth
+   - **🔄 Reset & retry**: Use `reset_authentication()` to start fresh
+   - **🔧 Manual setup**: Verify Yahoo Consumer Key/Secret in .env
+   - **📝 Help**: Run `get_setup_instructions()` for detailed guidance
+
+2. **OAuth Troubleshooting**
+   - **SSL certificate warnings**: Normal for automated OAuth - safe to proceed
+   - **Timeout during OAuth**: Try manual OAuth as fallback (`start_oauth_flow()`)
+   - **Yahoo session issues**: Sign into Yahoo first, keep session active
+   - **Port conflicts**: Ensure nothing else uses port 8080
+   - **Browser compatibility**: Modern browsers work best (Chrome, Edge, Firefox)
 
 2. **No Historical Data**
    - Ensure league has existed for multiple seasons
