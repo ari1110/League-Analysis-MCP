@@ -510,6 +510,9 @@ def register_tools(mcp: FastMCP, app_state: Dict[str, Any]):
             # Use DataEnhancer for consistent, readable results
             data_enhancer = DataEnhancer(yahoo_query, cache_manager)
             
+            # Get team names for use in both enhancement paths
+            team_names = data_enhancer.get_team_names()
+            
             # Process picks with enhanced information (limited by max_picks to avoid rate limiting)
             enhanced_picks = []
             basic_picks = []
@@ -521,7 +524,6 @@ def register_tools(mcp: FastMCP, app_state: Dict[str, Any]):
                     enhanced_picks.append(enhanced_pick)
                 else:
                     # Basic enhancement for remaining picks (no player API calls)
-                    team_names = data_enhancer.get_team_names()
                     basic_pick = {
                         "pick": getattr(pick, 'pick', 0),
                         "round": getattr(pick, 'round', 0),

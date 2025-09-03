@@ -16,7 +16,7 @@ def test_imports():
     print("Testing module imports...")
     
     try:
-        from league_analysis_mcp_server import auth, cache, server
+        from league_analysis_mcp_server import cache, server
         from league_analysis_mcp_server.tools import register_tools  
         from league_analysis_mcp_server.resources import register_resources
         from league_analysis_mcp_server.historical import register_historical_tools

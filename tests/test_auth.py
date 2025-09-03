@@ -19,9 +19,9 @@ def test_auth_flow():
     os.environ['YAHOO_CONSUMER_SECRET'] = 'fake_secret_67890'
     
     try:
-        from league_analysis_mcp_server.auth import YahooAuthManager
+        from league_analysis_mcp_server.enhanced_auth import EnhancedYahooAuthManager
         
-        auth_manager = YahooAuthManager()
+        auth_manager = EnhancedYahooAuthManager()
         
         print(f"PASS - Auth manager with fake credentials:")
         print(f"   - Configured: {auth_manager.is_configured()}")

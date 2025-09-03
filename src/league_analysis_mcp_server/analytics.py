@@ -338,9 +338,9 @@ def register_analytics_tools(mcp: FastMCP, app_state: Dict[str, Any]):
                 rank_consistency = 1 - (statistics.stdev(metrics["ranks"]) / avg_rank) if avg_rank > 0 and len(metrics["ranks"]) > 1 else 0
                 
                 # Skill components (0-100 scale)
-                win_rate_score = min((avg_wins / 13) * 100, 100)  # Assuming ~13 games per season
-                playoff_rate_score = (metrics["playoff_appearances"] / seasons_played) * 100
-                championship_rate_score = (metrics["championships"] / seasons_played) * 100
+                win_rate_score = min((avg_wins / 13) * 100, 100) if avg_wins and 13 > 0 else 0  # Assuming ~13 games per season
+                playoff_rate_score = (metrics["playoff_appearances"] / seasons_played) * 100 if seasons_played > 0 else 0
+                championship_rate_score = (metrics["championships"] / seasons_played) * 100 if seasons_played > 0 else 0
                 consistency_score = (win_consistency + scoring_consistency + rank_consistency) / 3 * 100
                 
                 # Overall skill score (weighted average)
