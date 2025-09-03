@@ -39,9 +39,9 @@ jobs:
     
     - name: Run tests
       run: |
-        uv run python test_server.py
-        uv run python test_auth.py
-        uv run python test_startup.py
+        uv run python tests/test_server.py
+        uv run python tests/test_auth.py
+        uv run python tests/test_startup.py
     
     - name: Test package build
       run: uv build
