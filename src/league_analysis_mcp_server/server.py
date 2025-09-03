@@ -14,6 +14,11 @@ import uvicorn
 from .enhanced_auth import get_enhanced_auth_manager
 from .cache import get_cache_manager
 from .tools import register_tools
+from .team_tools import register_team_tools
+from .player_tools import register_player_tools
+from .game_tools import register_game_tools
+from .user_tools import register_user_tools
+from .utility_tools import register_utility_tools
 from .resources import register_resources
 from .oauth_callback_server import automated_oauth_flow
 
@@ -585,6 +590,11 @@ def initialize_server():
     
     # Register tools and resources
     register_tools(mcp, app_state)
+    register_team_tools(mcp, app_state)
+    register_player_tools(mcp, app_state)
+    register_game_tools(mcp, app_state)
+    register_user_tools(mcp, app_state)
+    register_utility_tools(mcp, app_state)
     register_resources(mcp, app_state)
     
     # Validate configuration

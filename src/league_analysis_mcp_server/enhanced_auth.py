@@ -55,7 +55,9 @@ class EnhancedYahooAuthManager:
         token_data = self.get_valid_token()
         
         if token_data:
-            credentials['yahoo_access_token_json'] = token_data
+            # Ensure token has all YFPY-required fields
+            augmented_token = self.ensure_token_completeness(token_data)
+            credentials['yahoo_access_token_json'] = augmented_token
             logger.info("Using valid access token")
         elif self.access_token_json:
             try:
@@ -65,7 +67,9 @@ class EnhancedYahooAuthManager:
                 else:
                     token_data = self.access_token_json
                 
-                credentials['yahoo_access_token_json'] = token_data
+                # Ensure token has all YFPY-required fields
+                augmented_token = self.ensure_token_completeness(token_data)
+                credentials['yahoo_access_token_json'] = augmented_token
                 logger.info("Using configured access token")
             except json.JSONDecodeError as e:
                 logger.error(f"Failed to parse access token JSON: {e}")
@@ -96,10 +100,12 @@ class EnhancedYahooAuthManager:
         refreshed_token = self.refresh_access_token(token_data)
         
         if refreshed_token:
-            self.save_token_to_file(refreshed_token)
-            self.update_env_file(refreshed_token)
+            # Augment refreshed token with YFPY-required fields
+            augmented_token = self.augment_token_for_yfpy(refreshed_token)
+            self.save_token_to_file(augmented_token)
+            self.update_env_file(augmented_token)
             logger.info("Token refreshed successfully")
-            return refreshed_token
+            return augmented_token
         
         logger.warning("Unable to refresh token")
         return None
@@ -214,6 +220,55 @@ class EnhancedYahooAuthManager:
         except requests.RequestException as e:
             logger.error(f"Token refresh request failed: {e}")
             return None
+    
+    def augment_token_for_yfpy(self, token_data: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Augment Yahoo OAuth token with additional fields required by YFPY.
+        
+        Args:
+            token_data: Raw token data from Yahoo OAuth
+            
+        Returns:
+            Token data with all fields required by YFPY
+        """
+        augmented = token_data.copy()
+        
+        # Add consumer credentials that YFPY expects in the token JSON
+        augmented['consumer_key'] = self.consumer_key
+        augmented['consumer_secret'] = self.consumer_secret
+        
+        # Convert expires_in to token_time (Unix timestamp of expiration)
+        if 'expires_in' in augmented:
+            current_time = int(time.time())
+            augmented['token_time'] = current_time + augmented['expires_in']
+        
+        # Add GUID placeholder - YFPY expects this but Yahoo OAuth doesn't provide it
+        # This field might not be strictly required for basic operations
+        if 'guid' not in augmented:
+            augmented['guid'] = None
+            
+        logger.debug("Token augmented with YFPY-required fields")
+        return augmented
+    
+    def ensure_token_completeness(self, token_data: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Ensure token has all fields required by YFPY, adding missing ones if needed.
+        
+        Args:
+            token_data: Existing token data
+            
+        Returns:
+            Token data with all required fields
+        """
+        if not token_data:
+            return token_data
+            
+        # Check if token already has YFPY fields (newer format)
+        if 'consumer_key' in token_data and 'consumer_secret' in token_data:
+            return token_data
+            
+        # Token needs augmentation (older format)
+        return self.augment_token_for_yfpy(token_data)
     
     def update_env_file(self, token_data: Dict[str, Any]) -> None:
         """Update .env file with new token data."""
@@ -472,9 +527,12 @@ League Analysis MCP - Yahoo Fantasy Sports API Setup
             if response.status_code == 200:
                 token_data = response.json()
                 
+                # Augment token data with YFPY-required fields
+                augmented_token = self.augment_token_for_yfpy(token_data)
+                
                 # Save tokens to file and environment
-                self.save_token_to_file(token_data)
-                self.update_env_file(token_data)
+                self.save_token_to_file(augmented_token)
+                self.update_env_file(augmented_token)
                 
                 logger.info("OAuth token exchange successful")
                 return True
