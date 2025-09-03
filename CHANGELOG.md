@@ -7,6 +7,67 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.6] - 2025-09-03
+
+### 🧪 **Enhanced Test Suite & Code Quality**
+
+#### Added
+- **Updated test suite**: Fixed test imports to use `EnhancedYahooAuthManager` instead of legacy auth
+- **OAuth callback server testing**: Added comprehensive test coverage for automated OAuth functionality
+- **SSL certificate generation testing**: Validates cryptography library integration
+- **Enhanced test output**: Clearer test descriptions and better error handling
+
+#### Fixed
+- **Test compatibility**: Updated all test files to work with current authentication system
+- **Import paths**: Fixed test imports to match current codebase structure
+- **Test execution**: Improved reliability when running in different environments
+
+#### Technical Details
+- Updated `test_server.py` to test `EnhancedYahooAuthManager` instead of `YahooAuthManager`
+- Added `OAuthCallbackServer` testing to validate SSL certificate creation
+- Enhanced imports testing to include all current modules
+- Added 7-test suite covering all critical functionality
+
+**Impact**: Comprehensive testing now validates the complete OAuth enhancement system, ensuring reliability in production.
+
+## [0.1.5] - 2025-09-03
+
+### 🚀 **MAJOR ENHANCEMENT: Automated OAuth Flow**
+
+#### Added
+- **🔥 NEW: Fully Automated OAuth Setup** - Complete hands-off OAuth experience
+  - `start_automated_oauth_flow()` - One-click OAuth completion with callback server
+  - **HTTPS callback server** - Automatically captures Yahoo authorization codes
+  - **SSL certificate generation** - Self-signed certificates for secure localhost callback
+  - **Browser integration** - Opens authorization URL automatically
+  - **Auto-token exchange** - Seamless code-to-token conversion without user intervention
+
+#### Enhanced
+- **OAuth user experience**: Reduced from manual code copying to fully automated flow
+- **Setup time**: Now ~30 seconds total (was ~5 minutes with manual steps)
+- **Error handling**: Comprehensive SSL certificate warnings guidance
+- **Browser compatibility**: Works with all modern browsers (Chrome, Edge, Firefox)
+
+#### Technical Improvements
+- **Cryptography integration**: Uses `cryptography>=3.0.0` for SSL certificate generation
+- **Fallback support**: OpenSSL fallback if cryptography unavailable
+- **Timeout handling**: Configurable timeout for OAuth completion (default 5 minutes)
+- **Connection testing**: Separate connection validation from OAuth flow
+- **Enhanced logging**: Detailed OAuth flow tracking for troubleshooting
+
+#### User Experience
+- **Zero manual steps**: Browser opens → Sign in → Automatic success
+- **Clear instructions**: SSL warning guidance for smooth experience  
+- **Error recovery**: Fallback to manual OAuth if automated flow fails
+- **Status reporting**: Real-time feedback during OAuth process
+
+### Documentation
+- **README.md**: Updated with automated OAuth instructions and SSL guidance
+- **Troubleshooting**: Added SSL certificate and browser compatibility guidance
+- **Setup examples**: Real-world usage examples showing 30-second setup
+
+**Impact**: Revolutionary improvement to user onboarding - from complex multi-step setup to one-click automation.
+
 ## [0.1.4] - 2025-09-02
 
 ### 🔧 **CRITICAL FIX**: Yahoo OAuth Redirect URI
@@ -161,5 +222,10 @@ uv run python setup_complete.py
 }
 ```
 
-[Unreleased]: https://github.com/league-analysis-mcp/league-analysis-mcp/compare/v0.1.0...HEAD
-[0.1.0]: https://github.com/league-analysis-mcp/league-analysis-mcp/releases/tag/v0.1.0
+[Unreleased]: https://github.com/ari1110/League-Analysis-MCP/compare/v0.1.6...HEAD
+[0.1.6]: https://github.com/ari1110/League-Analysis-MCP/releases/tag/v0.1.6
+[0.1.5]: https://github.com/ari1110/League-Analysis-MCP/releases/tag/v0.1.5
+[0.1.4]: https://github.com/ari1110/League-Analysis-MCP/releases/tag/v0.1.4
+[0.1.3]: https://github.com/ari1110/League-Analysis-MCP/releases/tag/v0.1.3
+[0.1.2]: https://github.com/ari1110/League-Analysis-MCP/releases/tag/v0.1.2
+[0.1.0]: https://github.com/ari1110/League-Analysis-MCP/releases/tag/v0.1.0

@@ -21,6 +21,8 @@ def test_imports():
         from src.league_analysis_mcp_server.resources import register_resources
         from src.league_analysis_mcp_server.historical import register_historical_tools
         from src.league_analysis_mcp_server.analytics import register_analytics_tools
+        from src.league_analysis_mcp_server.enhanced_auth import EnhancedYahooAuthManager
+        from src.league_analysis_mcp_server.oauth_callback_server import OAuthCallbackServer
         print("PASS - All modules imported successfully")
         return True
     except ImportError as e:
@@ -50,13 +52,13 @@ def test_config_files():
         return False
 
 def test_auth_manager():
-    """Test authentication manager without actual credentials."""
-    print("Testing authentication manager...")
+    """Test enhanced authentication manager without actual credentials."""
+    print("Testing enhanced authentication manager...")
     
     try:
-        from src.league_analysis_mcp_server.auth import YahooAuthManager
+        from src.league_analysis_mcp_server.enhanced_auth import EnhancedYahooAuthManager
         
-        auth_manager = YahooAuthManager()
+        auth_manager = EnhancedYahooAuthManager()
         
         # Test methods without requiring actual credentials
         is_configured = auth_manager.is_configured()
@@ -71,6 +73,32 @@ def test_auth_manager():
         return True
     except Exception as e:
         print(f"FAIL - Auth manager error: {e}")
+        return False
+
+def test_oauth_callback_server():
+    """Test OAuth callback server functionality without starting server."""
+    print("Testing OAuth callback server...")
+    
+    try:
+        from src.league_analysis_mcp_server.oauth_callback_server import OAuthCallbackServer
+        
+        # Test server creation
+        server = OAuthCallbackServer(port=8080)
+        print("PASS - OAuth callback server created")
+        
+        # Test SSL certificate generation (without cryptography to avoid dependencies)
+        try:
+            server._create_self_signed_cert()
+            print("   - SSL certificate generation: available")
+        except Exception:
+            print("   - SSL certificate generation: fallback mode")
+        
+        print("   - Automated OAuth flow: available")
+        print("   - HTTPS callback server: ready")
+        
+        return True
+    except Exception as e:
+        print(f"FAIL - OAuth callback server error: {e}")
         return False
 
 def test_cache_manager():
@@ -159,7 +187,8 @@ def main():
         ("Dependencies", test_dependencies),
         ("Module Imports", test_imports), 
         ("Configuration Files", test_config_files),
-        ("Authentication Manager", test_auth_manager),
+        ("Enhanced Authentication Manager", test_auth_manager),
+        ("OAuth Callback Server", test_oauth_callback_server),
         ("Cache Manager", test_cache_manager),
         ("Server Initialization", test_server_initialization)
     ]

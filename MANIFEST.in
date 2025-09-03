@@ -6,13 +6,13 @@ include README.md
 include LICENSE
 include CHANGELOG.md
 include MCP_INTEGRATION_GUIDE.md
+include RELEASE.md
 
-# Include setup scripts
-include setup_complete.py
+# Include utility scripts
 recursive-include utils *.py
 
 # Include test files
-recursive-include test* *.py
+recursive-include tests *.py
 
 # Include example configurations
 recursive-include example_configs *.json

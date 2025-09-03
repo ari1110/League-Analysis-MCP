@@ -1,6 +1,6 @@
 # Release Guide
 
-## Current Release: v0.1.0 ✅
+## Current Release: v0.1.6 ✅
 
 **Status**: Published to PyPI  
 **Install**: `uvx league-analysis-mcp-server` or `pip install league-analysis-mcp-server`  
@@ -89,8 +89,13 @@ After each release, verify:
 
 ## 🔄 Version History
 
+- **v0.1.6** - Enhanced test suite and code quality improvements
+- **v0.1.5** - Automated OAuth flow with callback server
+- **v0.1.4** - Critical OAuth redirect URI fix
+- **v0.1.3** - Streamlined authentication setup tools
+- **v0.1.2** - GitHub Actions and CI/CD improvements
+- **v0.1.1** - Initial bug fixes and GitHub Actions
 - **v0.1.0** - Initial PyPI release with full MCP functionality
-- **v0.1.1** - GitHub Actions integration and automated workflows
 
 ## 🛠️ Troubleshooting Releases
 

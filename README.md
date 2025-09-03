@@ -63,9 +63,9 @@ After installation, the server will guide you through Yahoo API setup automatica
 
 **From Source:**
 ```bash
-git clone <repository-url>
-cd league-analysis-mcp
-uv run python setup_complete.py
+git clone https://github.com/ari1110/League-Analysis-MCP.git
+cd League-Analysis-MCP
+uv run python utils/setup_complete.py
 ```
 
 This automated script will:
@@ -189,10 +189,10 @@ uv run python -m src.server
 
 ## 🔌 MCP Client Configuration
 
-### Claude Desktop
+**For detailed setup instructions for all MCP clients, see [MCP_INTEGRATION_GUIDE.md](MCP_INTEGRATION_GUIDE.md)**
 
-Add this to your Claude Desktop `claude_desktop_config.json`:
-
+**Quick setup for Claude Desktop:**
+Add to `claude_desktop_config.json`:
 ```json
 {
   "mcpServers": {
@@ -204,48 +204,7 @@ Add this to your Claude Desktop `claude_desktop_config.json`:
 }
 ```
 
-**Configuration file locations:**
-- **Windows:** `%APPDATA%\Claude\claude_desktop_config.json`
-- **macOS:** `~/Library/Application Support/Claude/claude_desktop_config.json`
-- **Linux:** `~/.config/Claude/claude_desktop_config.json`
-
-### Claude Code
-
-Add this to your Claude Code MCP configuration:
-
-```json
-{
-  "mcpServers": {
-    "league-analysis": {
-      "command": "uvx",
-      "args": ["league-analysis-mcp-server"]
-    }
-  }
-}
-```
-
-### Continue.dev
-
-Add this to your Continue config:
-
-```json
-{
-  "mcpServers": [
-    {
-      "name": "league-analysis",
-      "command": ["uvx", "league-analysis-mcp-server"]
-    }
-  ]
-}
-```
-
-### Other MCP Clients
-
-For any MCP-compatible client, use these connection details:
-- **Command:** `uvx`
-- **Args:** `["league-analysis-mcp-server"]`
-- **Transport:** stdio (default)
-- **No working directory needed!**
+The integration guide covers configuration for Claude Desktop, Claude Code, Continue.dev, and other MCP clients with complete examples and troubleshooting.
 
 ### 🔧 Testing Your Connection
 
