@@ -377,11 +377,14 @@ def complete_oauth_flow(verification_code: str) -> Dict[str, Any]:
     """
     Complete the Yahoo OAuth flow with the verification code.
     
+    This function now only handles token exchange for better isolation and debugging.
+    Connection testing should be done separately using test_yahoo_connection().
+    
     Args:
         verification_code: The verification code from Yahoo's authorization page
     
     Returns:
-        OAuth completion status and connection test results
+        OAuth token exchange status (connection testing removed for debugging)
     """
     if not verification_code:
         return {
@@ -393,35 +396,29 @@ def complete_oauth_flow(verification_code: str) -> Dict[str, Any]:
     auth_manager = app_state["auth_manager"]
     
     try:
+        print("DEBUG: Starting token exchange process...")
+        
         # Exchange verification code for tokens
+        print("DEBUG: About to call exchange_code_for_tokens...")
         success = auth_manager.exchange_code_for_tokens(verification_code)
+        print(f"DEBUG: Token exchange result: {success}")
         
         if success:
-            # Test the connection
-            test_result = auth_manager.test_connection()
-            
-            if test_result:
-                return {
-                    "status": "success",
-                    "message": "🎉 Yahoo OAuth setup completed successfully!",
-                    "details": "Authentication is working and tokens are saved.",
-                    "next_steps": [
-                        "Your setup is complete! You can now use all fantasy tools:",
-                        "• get_league_info(league_id, sport) - Get league information",
-                        "• get_standings(league_id, sport) - View league standings", 
-                        "• list_available_seasons(sport) - See available seasons",
-                        "• analyze_manager_history(league_id, sport) - Historical analysis"
-                    ],
-                    "token_status": auth_manager.get_token_status()
-                }
-            else:
-                return {
-                    "status": "partial_success",
-                    "message": "Tokens saved but connection test inconclusive",
-                    "details": "This may be normal if you haven't specified a league yet",
-                    "next_step": "Try using get_league_info() with a real league ID to fully test"
-                }
+            print("DEBUG: Token exchange successful, skipping connection test for now")
+            return {
+                "status": "success",
+                "message": "🎉 Yahoo OAuth token exchange completed successfully!",
+                "details": "Tokens have been saved. Connection testing has been separated for better debugging.",
+                "next_steps": [
+                    "Token exchange is complete! Next steps:",
+                    "• Test your connection using test_yahoo_connection() tool",
+                    "• Or try get_league_info(league_id, sport) with a real league"
+                ],
+                "token_status": auth_manager.get_token_status(),
+                "note": "Connection testing removed to isolate OAuth token exchange from YFPY initialization"
+            }
         else:
+            print("DEBUG: Token exchange failed")
             return {
                 "status": "error",
                 "message": "Failed to exchange verification code for tokens",
