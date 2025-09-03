@@ -1,7 +1,7 @@
 {
   "server": {
     "name": "league-analysis-mcp",
-    "version": "0.1.5",
+    "version": "0.1.6",
     "description": "MCP server for Yahoo Fantasy Sports analysis with historical data support"
   },
   "default_league": {
@@ -9,7 +9,12 @@
     "game_code": "nfl",
     "season": "current"
   },
-  "supported_sports": ["nfl", "nba", "mlb", "nhl"],
+  "supported_sports": [
+    "nfl",
+    "nba",
+    "mlb",
+    "nhl"
+  ],
   "features": {
     "historical_analysis": true,
     "manager_profiling": true,

@@ -6,7 +6,8 @@
       "Bash(uv run:*)",
       "mcp__league-analysis__save_yahoo_credentials",
       "Bash(git add:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(gh run view:*)"
     ],
     "deny": [],
     "ask": []
