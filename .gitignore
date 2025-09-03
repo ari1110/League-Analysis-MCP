@@ -93,3 +93,8 @@ test_all_*.py
 *_analysis_report.txt
 *_tools_analysis.json
 comprehensive_*.json
+
+# Build and backup directories
+src_backup/
+dist/
+build/

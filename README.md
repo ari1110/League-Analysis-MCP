@@ -66,15 +66,10 @@ The server **automatically downloads** when you configure your MCP client. Just 
 ```bash
 git clone https://github.com/ari1110/League-Analysis-MCP.git
 cd League-Analysis-MCP
-uv run python utils/setup_complete.py
+uv sync --all-extras
 ```
 
-This automated script will:
-- ✅ Install all dependencies  
-- ✅ Run comprehensive system tests
-- ✅ Guide you through Yahoo OAuth setup
-- ✅ Test the complete integration
-- ✅ Provide usage instructions
+Then set up authentication using the conversational MCP tools (see streamlined setup below).
 
 ## 🚀 **NEW! Streamlined Authentication Setup**
 
@@ -170,9 +165,9 @@ AI: 🎉 Setup complete! Now let me get your league standings...
 
 **Total time: ~2 minutes.** No technical knowledge required!
 
-### 🔧 **Fallback: Manual Setup (Advanced Users)**
+### 🔧 **Development Setup (Advanced Users)**
 
-If you prefer the traditional approach, you can still use the manual setup scripts. But most users will love the new conversational setup!
+For development or troubleshooting, you can also run the server manually after installing dependencies with `uv sync --all-extras`.
 
 ## Usage
 
@@ -228,9 +223,9 @@ After adding to your MCP client:
    - Verify the server starts manually: `uv run python -m src.server`
 
 2. **Authentication errors:**
-   - Use the new streamlined setup: Ask your AI assistant to run `check_setup_status()`
-   - For advanced users: Run `uv run python utils/setup_yahoo_auth.py`
-   - Check your Yahoo Developer app settings
+   - Use the streamlined setup: Ask your AI assistant to run `check_setup_status()`
+   - Follow the conversational setup process using MCP tools
+   - Check your Yahoo Developer app settings (redirect URI must be `https://localhost:8080/`)
 
 3. **Permission issues:**
    - Ensure your MCP client has permission to execute UV

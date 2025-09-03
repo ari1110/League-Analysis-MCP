@@ -402,7 +402,7 @@ League Analysis MCP - Yahoo Fantasy Sports API Setup
      YAHOO_CONSUMER_SECRET=your_consumer_secret
 
 3. Run Authentication:
-   - uv run python utils/setup_yahoo_auth.py
+   - Use MCP tools: save_yahoo_credentials() and start_automated_oauth_flow()
 
 🔧 TROUBLESHOOTING:
    - Check token status: get_server_info() tool
