@@ -7,7 +7,8 @@
       "mcp__league-analysis__save_yahoo_credentials",
       "Bash(git add:*)",
       "Bash(git commit:*)",
-      "Bash(gh run view:*)"
+      "Bash(gh run view:*)",
+      "mcp__context7__get-library-docs"
     ],
     "deny": [],
     "ask": []

@@ -38,26 +38,27 @@ A comprehensive Model Context Protocol (MCP) server that provides AI assistants 
 ## Installation
 
 ### Prerequisites
-- Python 3.10+
+- **Python 3.10+**
+- **uv installed** (Python package manager)
 - Yahoo Developer App credentials (setup will guide you)
 
-### 🚀 Easy Installation (PyPI)
+### 🚀 Install uv (Required)
 
-**One-Command Install:**
 ```bash
-# Install and run directly with uvx (recommended)
-uvx league-analysis-mcp-server
-
-# Or install with pip
-pip install league-analysis-mcp-server
-league-analysis-mcp-server
-
-# Or run with python
-python -m league_analysis_mcp_server
+# Install uv (one-time setup)
+curl -LsSf https://astral.sh/uv/install.sh | sh
+# Windows: powershell -c "irm https://astral.sh/uv/install.ps1 | iex"
 ```
 
-**First-time setup:**
-After installation, the server will guide you through Yahoo API setup automatically.
+### ✨ No Package Installation Required!
+
+The server **automatically downloads** when you configure your MCP client. Just add the configuration below - no separate package installation needed!
+
+**How it works:**
+1. You install `uv` (the package manager)
+2. You configure your MCP client to use `uvx league-analysis-mcp-server`
+3. When your MCP client starts, `uvx` automatically downloads the server from PyPI
+4. Subsequent starts use the cached version
 
 ### 🔧 Development Installation
 
