@@ -85,3 +85,11 @@ backup/
 # Test outputs
 test_results/
 .coverage.*
+
+# Analysis and debugging files
+analyze_*.py
+apply_*.py
+test_all_*.py
+*_analysis_report.txt
+*_tools_analysis.json
+comprehensive_*.json
