@@ -20,8 +20,8 @@ logger = logging.getLogger(__name__)
 class EnhancedYahooAuthManager:
     """Enhanced Yahoo OAuth authentication manager with token refresh."""
     
-    # IETF standard out-of-band redirect URI for OAuth flows without web callbacks
-    REDIRECT_URI = "urn:ietf:wg:oauth:2.0:oob"
+    # Redirect URI for OAuth flows - must match Yahoo Developer app configuration
+    REDIRECT_URI = "http://localhost:8080"
     
     def __init__(self):
         self.consumer_key = os.getenv('YAHOO_CONSUMER_KEY')
