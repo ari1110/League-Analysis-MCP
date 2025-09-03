@@ -8,7 +8,7 @@ import os
 from pathlib import Path
 
 # Add src to path so we can import our modules
-sys.path.insert(0, str(Path(__file__).parent / "src"))
+sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 def test_auth_flow():
     """Test authentication flow with fake credentials."""
@@ -19,7 +19,7 @@ def test_auth_flow():
     os.environ['YAHOO_CONSUMER_SECRET'] = 'fake_secret_67890'
     
     try:
-        from src.league_analysis_mcp_server.auth import YahooAuthManager
+        from league_analysis_mcp_server.auth import YahooAuthManager
         
         auth_manager = YahooAuthManager()
         
@@ -48,13 +48,13 @@ def test_server_tools_without_yahoo():
     print("\nTesting server tools without Yahoo API...")
     
     try:
-        from src.league_analysis_mcp_server.server import mcp, app_state
+        from league_analysis_mcp_server.server import mcp, app_state
         
         # Test server info tool (should work without Yahoo API)
         print("Testing get_server_info()...")
         
         # Import the function directly
-        from src.league_analysis_mcp_server.server import get_server_info
+        from league_analysis_mcp_server.server import get_server_info
         
         result = get_server_info()
         
@@ -79,7 +79,7 @@ def test_game_ids():
     print("\nTesting game ID mappings...")
     
     try:
-        from src.league_analysis_mcp_server.server import list_available_seasons
+        from league_analysis_mcp_server.server import list_available_seasons
         
         # Test each sport
         sports = ["nfl", "nba", "mlb", "nhl"]
@@ -105,7 +105,7 @@ def test_cache_operations():
     print("\nTesting cache operations...")
     
     try:
-        from src.league_analysis_mcp_server.cache import get_cache_manager
+        from league_analysis_mcp_server.cache import get_cache_manager
         
         cache_manager = get_cache_manager()
         

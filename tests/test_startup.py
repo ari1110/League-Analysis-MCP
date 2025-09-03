@@ -9,7 +9,7 @@ import signal
 from pathlib import Path
 
 # Add src to path so we can import our modules
-sys.path.insert(0, str(Path(__file__).parent / "src"))
+sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 def test_server_import():
     """Test that we can import the server without issues."""
@@ -20,7 +20,7 @@ def test_server_import():
         os.environ['YAHOO_CONSUMER_KEY'] = 'test_key'
         os.environ['YAHOO_CONSUMER_SECRET'] = 'test_secret'
         
-        from src.league_analysis_mcp_server import server
+        from league_analysis_mcp_server import server
         print("PASS - Server module imported successfully")
         print(f"   - MCP instance: {type(server.mcp)}")
         print(f"   - App state keys: {list(server.app_state.keys())}")
@@ -38,7 +38,7 @@ def test_mcp_tools_registration():
     print("\nTesting MCP tools registration...")
     
     try:
-        from src.league_analysis_mcp_server.server import mcp
+        from league_analysis_mcp_server.server import mcp
         
         # Check if the server has tools registered
         # This is a bit tricky since FastMCP may not expose tools directly
@@ -57,7 +57,7 @@ def test_server_initialization():
     print("\nTesting server initialization...")
     
     try:
-        from src.league_analysis_mcp_server.server import initialize_server
+        from league_analysis_mcp_server.server import initialize_server
         
         # Run initialization (this registers tools/resources)
         initialize_server()
@@ -76,7 +76,7 @@ def test_individual_tools():
     print("\nTesting individual tool functions...")
     
     try:
-        from src.league_analysis_mcp_server.server import get_server_info, list_available_seasons
+        from league_analysis_mcp_server.server import get_server_info, list_available_seasons
         
         # Test get_server_info
         server_info = get_server_info()

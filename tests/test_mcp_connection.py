@@ -15,14 +15,14 @@ def test_mcp_server_stdio():
     
     try:
         # Start the server process
-        cmd = ["uv", "run", "python", "-m", "src.server"]
+        cmd = ["uv", "run", "python", "-m", "league_analysis_mcp_server.server"]
         process = subprocess.Popen(
             cmd,
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             text=True,
-            cwd=Path(__file__).parent
+            cwd=Path(__file__).parent.parent
         )
         
         # Send initialize request
@@ -86,7 +86,7 @@ def generate_config_examples():
             "mcpServers": {
                 "league-analysis-mcp": {
                     "command": "uv",
-                    "args": ["run", "python", "-m", "src.server"],
+                    "args": ["run", "python", "-m", "league_analysis_mcp_server.server"],
                     "cwd": str(current_dir)
                 }
             }
@@ -95,7 +95,7 @@ def generate_config_examples():
             "mcpServers": {
                 "league-analysis-mcp": {
                     "command": "uv",
-                    "args": ["run", "python", "-m", "src.server"],
+                    "args": ["run", "python", "-m", "league_analysis_mcp_server.server"],
                     "cwd": str(current_dir),
                     "env": {}
                 }
@@ -105,7 +105,7 @@ def generate_config_examples():
             "mcpServers": [
                 {
                     "name": "league-analysis-mcp",
-                    "command": ["uv", "run", "python", "-m", "src.server"],
+                    "command": ["uv", "run", "python", "-m", "league_analysis_mcp_server.server"],
                     "cwd": str(current_dir)
                 }
             ]
@@ -132,9 +132,9 @@ def check_server_capabilities():
     
     try:
         # Import our server modules to check capabilities
-        sys.path.insert(0, str(Path(__file__).parent / "src"))
+        sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
         
-        from src.league_analysis_mcp_server.server import mcp, app_state
+        from league_analysis_mcp_server.server import mcp, app_state
         
         print("Server capabilities:")
         print(f"  - Server name: {mcp.name}")

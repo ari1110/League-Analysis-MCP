@@ -9,20 +9,20 @@ import logging
 from pathlib import Path
 
 # Add src to path so we can import our modules
-sys.path.insert(0, str(Path(__file__).parent / "src"))
+sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 def test_imports():
     """Test that all our modules can be imported."""
     print("Testing module imports...")
     
     try:
-        from src.league_analysis_mcp_server import auth, cache, server
-        from src.league_analysis_mcp_server.tools import register_tools  
-        from src.league_analysis_mcp_server.resources import register_resources
-        from src.league_analysis_mcp_server.historical import register_historical_tools
-        from src.league_analysis_mcp_server.analytics import register_analytics_tools
-        from src.league_analysis_mcp_server.enhanced_auth import EnhancedYahooAuthManager
-        from src.league_analysis_mcp_server.oauth_callback_server import OAuthCallbackServer
+        from league_analysis_mcp_server import auth, cache, server
+        from league_analysis_mcp_server.tools import register_tools  
+        from league_analysis_mcp_server.resources import register_resources
+        from league_analysis_mcp_server.historical import register_historical_tools
+        from league_analysis_mcp_server.analytics import register_analytics_tools
+        from league_analysis_mcp_server.enhanced_auth import EnhancedYahooAuthManager
+        from league_analysis_mcp_server.oauth_callback_server import OAuthCallbackServer
         print("PASS - All modules imported successfully")
         return True
     except ImportError as e:
@@ -56,7 +56,7 @@ def test_auth_manager():
     print("Testing enhanced authentication manager...")
     
     try:
-        from src.league_analysis_mcp_server.enhanced_auth import EnhancedYahooAuthManager
+        from league_analysis_mcp_server.enhanced_auth import EnhancedYahooAuthManager
         
         auth_manager = EnhancedYahooAuthManager()
         
@@ -80,7 +80,7 @@ def test_oauth_callback_server():
     print("Testing OAuth callback server...")
     
     try:
-        from src.league_analysis_mcp_server.oauth_callback_server import OAuthCallbackServer
+        from league_analysis_mcp_server.oauth_callback_server import OAuthCallbackServer
         
         # Test server creation
         server = OAuthCallbackServer(port=8080)
@@ -106,7 +106,7 @@ def test_cache_manager():
     print("Testing cache manager...")
     
     try:
-        from src.league_analysis_mcp_server.cache import CacheManager
+        from league_analysis_mcp_server.cache import CacheManager
         
         cache = CacheManager()
         
@@ -135,7 +135,7 @@ def test_server_initialization():
     
     try:
         # Test that we can load the server module and configuration
-        from src.league_analysis_mcp_server.server import config, game_ids, app_state
+        from league_analysis_mcp_server.server import config, game_ids, app_state
         
         print(f"PASS - Server config loaded")
         print(f"   - Server name: {config['server']['name']}")
