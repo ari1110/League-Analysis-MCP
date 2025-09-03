@@ -3,7 +3,10 @@
     "allow": [
       "WebSearch",
       "WebFetch(domain:raw.githubusercontent.com)",
-      "Bash(uv run:*)"
+      "Bash(uv run:*)",
+      "mcp__league-analysis__save_yahoo_credentials",
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
     ],
     "deny": [],
     "ask": []
