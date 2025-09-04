@@ -1,6 +1,6 @@
 # Release Guide
 
-## Current Release: v0.1.6 ✅
+## Current Release: v0.2.1 ✅
 
 **Status**: Published to PyPI  
 **Install**: `uvx league-analysis-mcp-server` or `pip install league-analysis-mcp-server`  

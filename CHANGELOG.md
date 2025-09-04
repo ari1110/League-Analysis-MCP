@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.1] - 2025-09-04
+
+### 🔧 **Bug Fixes**
+
+#### Fixed
+- **Cache Manager Methods**: Added missing `get()`, `set()`, and `clear()` methods to CacheManager class
+- **API Access Error**: Fixed `'CacheManager' object has no attribute 'get'` error that prevented all API calls
+- **Direct Cache Access**: Enabled proper cache access for tools that use simple cache keys
+- **Backward Compatibility**: Maintained compatibility with existing historical and current data cache methods
+
 ## [0.1.6] - 2025-09-03
 
 ### 🧪 **Enhanced Test Suite & Code Quality**

@@ -143,6 +143,20 @@ class CacheManager:
 
         logger.info(f"Invalidated {len(keys_to_delete)} current season cache entries")
 
+    def get(self, key: str) -> Optional[Any]:
+        """Get value from cache directly (for general cache operations)."""
+        return self.cache.get(key)
+
+    def set(self, key: str, value: Any, ttl: Optional[int] = None) -> None:
+        """Set value in cache directly (for general cache operations)."""
+        if ttl is None:
+            ttl = self.current_ttl
+        self.cache.set(key, value, ttl)
+
+    def clear(self) -> None:
+        """Clear all cache entries."""
+        self.cache.clear()
+
     def get_cache_stats(self) -> Dict[str, Any]:
         """Get comprehensive cache statistics."""
         return self.cache.get_stats()
