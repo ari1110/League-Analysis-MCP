@@ -71,21 +71,48 @@ def update_pyproject_version(new_version: str) -> None:
 
 
 def update_settings_version(new_version: str) -> None:
-    """Update version in config/settings.json"""
-    settings_path = Path("config/settings.json")
-    if not settings_path.exists():
-        print("Warning: config/settings.json not found, skipping")
+    """Update version in all settings.json files"""
+    settings_files = [
+        "config/settings.json",
+        "src/league_analysis_mcp_server/config/settings.json"
+    ]
+    
+    for settings_path_str in settings_files:
+        settings_path = Path(settings_path_str)
+        if not settings_path.exists():
+            print(f"Warning: {settings_path_str} not found, skipping")
+            continue
+        
+        with open(settings_path, "r") as f:
+            settings = json.load(f)
+        
+        settings["server"]["version"] = new_version
+        
+        with open(settings_path, "w") as f:
+            json.dump(settings, f, indent=2)
+        
+        print(f"Updated {settings_path_str}: version = \"{new_version}\"")
+
+
+def update_release_version(new_version: str) -> None:
+    """Update version in RELEASE.md"""
+    release_path = Path("RELEASE.md")
+    if not release_path.exists():
+        print("Warning: RELEASE.md not found, skipping")
         return
     
-    with open(settings_path, "r") as f:
-        settings = json.load(f)
+    content = release_path.read_text(encoding='utf-8')
     
-    settings["server"]["version"] = new_version
+    # Update the current release line
+    updated_content = re.sub(
+        r'^## Current Release: v[0-9]+\.[0-9]+\.[0-9]+ ✅',
+        f'## Current Release: v{new_version} ✅',
+        content,
+        flags=re.MULTILINE
+    )
     
-    with open(settings_path, "w") as f:
-        json.dump(settings, f, indent=2)
-    
-    print(f"Updated config/settings.json: version = \"{new_version}\"")
+    release_path.write_text(updated_content, encoding='utf-8')
+    print(f"Updated RELEASE.md: Current Release = v{new_version}")
 
 
 def main():
@@ -111,9 +138,10 @@ def main():
         
         print(f"New version: {new_version}")
         
-        # Update both files
+        # Update all files
         update_pyproject_version(new_version)
         update_settings_version(new_version)
+        update_release_version(new_version)
         
         print(f"\n✅ Version bumped from {current_version} to {new_version}")
         print(f"Next steps:")

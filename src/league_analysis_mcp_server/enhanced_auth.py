@@ -393,7 +393,7 @@ League Analysis MCP - Yahoo Fantasy Sports API Setup
    - Create new app:
      * Application Type: Web Application
      * Home Page URL: http://localhost
-     * Redirect URI(s): oob
+     * Redirect URI(s): https://localhost:8080/
 
 2. Configure Environment:
    - Copy .env.example to .env

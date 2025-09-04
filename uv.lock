@@ -556,7 +556,7 @@ wheels = [
 
 [[package]]
 name = "league-analysis-mcp-server"
-version = "0.1.7"
+version = "0.2.1"
 source = { editable = "." }
 dependencies = [
     { name = "asyncio-throttle" },

@@ -182,7 +182,7 @@ def main():
         print("\nNext Steps for Full Testing:")
         print("1. Get Yahoo Developer credentials:")
         print("   - Go to https://developer.yahoo.com/apps/")
-        print("   - Create new app with redirect_uri: 'oob'")
+        print("   - Create new app with redirect_uri: 'https://localhost:8080/'")
         print("   - Copy Consumer Key & Secret")
         print()
         print("2. Create .env file:")

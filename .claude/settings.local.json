@@ -44,7 +44,8 @@
       "Read(/C:\\Users\\ari11\\C-drive-projects\\League-Analysis-MCP\\src\\league_analysis_mcp_server/**)",
       "Read(/C:\\Users\\ari11\\C-drive-projects\\League-Analysis-MCP\\src\\league_analysis_mcp_server/**)",
       "Read(/C:\\Users\\ari11\\C-drive-projects\\League-Analysis-MCP\\src\\league_analysis_mcp_server/**)",
-      "Read(/C:\\Users\\ari11\\C-drive-projects\\League-Analysis-MCP\\tests/**)"
+      "Read(/C:\\Users\\ari11\\C-drive-projects\\League-Analysis-MCP\\tests/**)",
+      "Read(/C:\\Users\\ari11\\C-drive-projects\\League-Analysis-MCP/**)"
     ],
     "deny": [],
     "ask": []

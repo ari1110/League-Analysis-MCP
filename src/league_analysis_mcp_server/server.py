@@ -265,13 +265,13 @@ def create_yahoo_app() -> Dict[str, Any]:
             "   • Application Type: Web Application",
             "   • Description: Fantasy Sports Analysis for MCP",
             "   • Home Page URL: http://localhost",
-            "   • Redirect URI(s): urn:ietf:wg:oauth:2.0:oob",
+            "   • Redirect URI(s): https://localhost:8080/",
             "5. Click 'Create App'",
             "6. Copy your Consumer Key and Consumer Secret from the app details page",
             "7. Use save_yahoo_credentials() with your keys"
         ],
         "important_notes": [
-            "• Use 'urn:ietf:wg:oauth:2.0:oob' for the redirect URI - this is the IETF standard for out-of-band OAuth",
+            "• Use 'https://localhost:8080/' for the redirect URI - this must match exactly for automated OAuth",
             "• Make sure to use the same Yahoo account for the app and your fantasy leagues",
             "• Keep your Consumer Key and Consumer Secret secure"
         ],
