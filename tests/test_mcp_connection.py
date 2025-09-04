@@ -47,8 +47,9 @@ def test_mcp_server_stdio():
         
         # Send request
         request_json = json.dumps(initialize_request) + "\n"
-        process.stdin.write(request_json)
-        process.stdin.flush()
+        if process.stdin is not None:
+            process.stdin.write(request_json)
+            process.stdin.flush()
         
         # Wait a bit for response
         import time

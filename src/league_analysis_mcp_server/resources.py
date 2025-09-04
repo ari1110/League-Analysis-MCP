@@ -3,15 +3,14 @@ MCP Resources for Yahoo Fantasy Sports API
 """
 
 import logging
-from typing import Dict, Any, List
-from datetime import datetime
+from typing import Dict, Any
 
 logger = logging.getLogger(__name__)
 
 
 def register_resources(mcp, app_state: Dict[str, Any]):
     """Register all MCP resources (read-only data endpoints)."""
-    
+
     @mcp.resource("league_overview/{sport}/{league_id}")
     def get_league_overview(sport: str, league_id: str) -> str:
         """
@@ -19,11 +18,11 @@ def register_resources(mcp, app_state: Dict[str, Any]):
         """
         try:
             season = None  # Could be extended to support season parameter
-            
+
             config = app_state["config"]
             if sport not in config["supported_sports"]:
                 return f"Error: Unsupported sport '{sport}'. Supported: {', '.join(config['supported_sports'])}"
-            
+
             # This would typically fetch data, but for demonstration we'll return a template
             overview = f"""
 # League Overview: {sport.upper()} League {league_id}
@@ -51,19 +50,18 @@ Use the available tools to dive deeper into specific aspects:
 - analyze_manager_history: Historical performance patterns
 """
             return overview
-            
+
         except Exception as e:
             logger.error(f"Error in league_overview resource: {e}")
             return f"Error: {str(e)}"
-    
-    
+
     @mcp.resource("current_week/{sport}/{league_id}")
     def get_current_week_info(sport: str, league_id: str) -> str:
         """
         Provides current week matchup and league activity.
         """
         try:
-            
+
             current_week = f"""
 # Current Week Activity: {sport.upper()} League {league_id}
 
@@ -82,23 +80,20 @@ Use the available tools to dive deeper into specific aspects:
 Use get_matchups tool with current week for detailed matchup analysis.
 """
             return current_week
-            
+
         except Exception as e:
             logger.error(f"Error in current_week resource: {e}")
             return f"Error: {str(e)}"
-    
-    
+
     @mcp.resource("league_history/{sport}/{league_id}")
     def get_league_history_summary(sport: str, league_id: str) -> str:
         """
         Provides multi-season league history and trends.
         """
         try:
-            seasons_param = "3"  # Default to last 3 seasons
-            
             game_ids = app_state["game_ids"]
             available_seasons = list(game_ids.get(sport, {}).keys())
-            
+
             history_summary = f"""
 # League History: {sport.upper()} League {league_id}
 
@@ -109,7 +104,7 @@ Use get_matchups tool with current week for detailed matchup analysis.
 
 ## Historical Analysis Tools Available
 - get_historical_drafts: Draft results across seasons
-- analyze_manager_history: Manager performance patterns  
+- analyze_manager_history: Manager performance patterns
 - compare_seasons: Season-to-season comparisons
 - get_season_transactions: Transaction history by season
 
@@ -128,12 +123,11 @@ Use the historical analysis tools to uncover:
 4. Dive into specific season transactions as needed
 """
             return history_summary
-            
+
         except Exception as e:
             logger.error(f"Error in league_history resource: {e}")
             return f"Error: {str(e)}"
-    
-    
+
     @mcp.resource("manager_profiles/{sport}/{league_id}")
     def get_manager_profiles_summary(sport: str, league_id: str) -> str:
         """
@@ -141,7 +135,7 @@ Use the historical analysis tools to uncover:
         """
         try:
             team_id = None  # Could be extended to support specific team analysis
-            
+
             profile_summary = f"""
 # Manager Profiles: {sport.upper()} League {league_id}
 {f"Focus: Team {team_id}" if team_id else "All Managers"}
@@ -155,7 +149,7 @@ Use the historical analysis tools to uncover:
 - Championship frequency
 - Consistency scoring
 
-### Behavioral Patterns  
+### Behavioral Patterns
 - Draft position preferences
 - Trading frequency and partners
 - Waiver wire activity levels
@@ -175,7 +169,7 @@ Use the historical analysis tools to uncover:
 ## Manager Categories
 Based on historical analysis, managers typically fall into:
 - **Champions**: Consistent top performers
-- **Contenders**: Regular playoff participants  
+- **Contenders**: Regular playoff participants
 - **Wildcards**: Unpredictable season outcomes
 - **Rebuilders**: Focus on future seasons
 - **Casual**: Less active management style
@@ -183,7 +177,7 @@ Based on historical analysis, managers typically fall into:
 Use analyze_manager_history to get specific data for classification.
 """
             return profile_summary
-            
+
         except Exception as e:
             logger.error(f"Error in manager_profiles resource: {e}")
             return f"Error: {str(e)}"

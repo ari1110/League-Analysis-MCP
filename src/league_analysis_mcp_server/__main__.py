@@ -10,6 +10,7 @@ This allows the package to be run directly with:
 import sys
 import logging
 
+
 def main():
     """Main entry point for the package."""
     try:
@@ -18,11 +19,11 @@ def main():
             level=logging.INFO,
             format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
         )
-        
+
         # Import and run the server
         from .server import main as server_main
         return server_main()
-        
+
     except KeyboardInterrupt:
         print("\nServer stopped by user")
         return 0
@@ -33,6 +34,7 @@ def main():
     except Exception as e:
         print(f"Failed to start League Analysis MCP Server: {e}")
         return 1
+
 
 if __name__ == "__main__":
     sys.exit(main())

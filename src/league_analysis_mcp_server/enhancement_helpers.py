@@ -1,12 +1,12 @@
 """
 Enhancement Helper Functions for YFPY Data Structures
 
-This module provides standardized enhancement functions to make YFPY data 
+This module provides standardized enhancement functions to make YFPY data
 readable and actionable across all tools.
 """
 
 import logging
-from typing import Dict, Any, List, Optional, Union
+from typing import Dict, Any, List, Union, Optional
 from yfpy import YahooFantasySportsQuery
 
 logger = logging.getLogger(__name__)
@@ -14,13 +14,13 @@ logger = logging.getLogger(__name__)
 
 class DataEnhancer:
     """Centralized data enhancement for all YFPY methods."""
-    
+
     def __init__(self, yahoo_query: YahooFantasySportsQuery, cache_manager=None):
         self.yahoo_query = yahoo_query
         self.cache_manager = cache_manager
-        self._team_names_cache = None
-        self._player_cache = {}
-        
+        self._team_names_cache: Optional[Dict[str, str]] = None
+        self._player_cache: Dict[str, Dict[str, Any]] = {}
+
     def get_team_names(self) -> Dict[str, str]:
         """Get team key to team name mapping."""
         if self._team_names_cache is None:
@@ -38,12 +38,12 @@ class DataEnhancer:
                 logger.warning(f"Failed to get team names: {e}")
                 self._team_names_cache = {}
         return self._team_names_cache
-    
+
     def get_player_info(self, player_key: str) -> Dict[str, Any]:
         """Get enhanced player information from player key."""
         if player_key in self._player_cache:
             return self._player_cache[player_key]
-            
+
         try:
             player_stats = self.yahoo_query.get_player_stats_for_season(player_key)
             if player_stats and hasattr(player_stats, 'name'):
@@ -68,14 +68,14 @@ class DataEnhancer:
                 "player_team": 'Unknown',
                 "player_id": 'Unknown'
             }
-            
+
         self._player_cache[player_key] = player_info
         return player_info
-    
+
     def enhance_draft_pick(self, pick) -> Dict[str, Any]:
         """Enhance a single draft pick with readable information."""
         team_names = self.get_team_names()
-        
+
         pick_data = {
             "pick": getattr(pick, 'pick', 0),
             "round": getattr(pick, 'round', 0),
@@ -84,16 +84,16 @@ class DataEnhancer:
             "player_key": str(getattr(pick, 'player_key', 'Unknown')),
             "cost": getattr(pick, 'cost', 0)
         }
-        
+
         # Add player information
         player_info = self.get_player_info(pick.player_key)
         pick_data.update(player_info)
-        
+
         return pick_data
-    
+
     def enhance_team_data(self, team) -> Dict[str, Any]:
         """Enhance team data with readable information."""
-        team_data = {
+        team_data: Dict[str, Any] = {
             "team_id": getattr(team, 'team_id', 'Unknown'),
             "team_key": str(getattr(team, 'team_key', 'Unknown')),
             "name": self._decode_bytes(getattr(team, 'name', 'Unknown Team')),
@@ -107,7 +107,7 @@ class DataEnhancer:
             "number_of_trades": getattr(team, 'number_of_trades', 0),
             "managers": []
         }
-        
+
         # Add manager information
         if hasattr(team, 'managers') and team.managers:
             for manager in team.managers:
@@ -120,15 +120,17 @@ class DataEnhancer:
                     "email": str(getattr(manager, 'email', 'Unknown')),
                     "image_url": str(getattr(manager, 'image_url', 'Unknown'))
                 }
-                team_data["managers"].append(manager_data)
-        
+                managers_list = team_data.get("managers")
+                if isinstance(managers_list, list):
+                    managers_list.append(manager_data)
+
         return team_data
-    
+
     def enhance_transaction(self, transaction) -> Dict[str, Any]:
         """Enhance transaction data with readable information."""
         team_names = self.get_team_names()
-        
-        transaction_data = {
+
+        transaction_data: Dict[str, Any] = {
             "transaction_id": getattr(transaction, 'transaction_id', 0),
             "transaction_key": str(getattr(transaction, 'transaction_key', 'Unknown')),
             "type": str(getattr(transaction, 'type', 'Unknown')),
@@ -141,21 +143,23 @@ class DataEnhancer:
             "tradee_team_name": team_names.get(getattr(transaction, 'tradee_team_key', ''), 'Unknown'),
             "players": []
         }
-        
+
         # Add player information if available
         if hasattr(transaction, 'players') and transaction.players:
             for player in transaction.players:
                 player_key = getattr(player, 'player_key', '')
                 if player_key:
                     player_info = self.get_player_info(player_key)
-                    transaction_data["players"].append({
-                        "player_key": player_key,
-                        **player_info,
-                        "transaction_data": getattr(player, 'transaction_data', {})
-                    })
-        
+                    players_list = transaction_data.get("players")
+                    if isinstance(players_list, list):
+                        players_list.append({
+                            "player_key": player_key,
+                            **player_info,
+                            "transaction_data": getattr(player, 'transaction_data', {})
+                        })
+
         return transaction_data
-    
+
     def enhance_roster_player(self, player) -> Dict[str, Any]:
         """Enhance roster player data."""
         player_data = {
@@ -165,11 +169,11 @@ class DataEnhancer:
             "is_starter": bool(getattr(player, 'is_starter', False)),
             "is_editable": bool(getattr(player, 'is_editable', True))
         }
-        
+
         # Add enhanced player information
         player_key = player_data["player_key"]
         if player_key and player_key != 'Unknown':
-            player_info = self.get_player_info(player_key)
+            player_info = self.get_player_info(str(player_key))
             player_data.update(player_info)
         else:
             # Fallback to basic name extraction if available
@@ -183,22 +187,22 @@ class DataEnhancer:
                     player_data["player_name"] = str(name)
             else:
                 player_data["player_name"] = 'Unknown Player'
-                
+
             player_data["player_position"] = getattr(player, 'display_position', 'Unknown')
             player_data["player_team"] = getattr(player, 'editorial_team_abbr', 'Unknown')
-        
+
         return player_data
-    
+
     def _decode_bytes(self, value: Union[str, bytes, Any]) -> str:
         """Helper to decode bytes values to strings."""
         if isinstance(value, bytes):
             return value.decode('utf-8')
         return str(value) if value else 'Unknown'
-    
+
     def enhance_data_batch(self, data_list: List[Any], enhancement_type: str) -> List[Dict[str, Any]]:
         """Enhance a batch of data objects based on type."""
         enhanced_data = []
-        
+
         for item in data_list:
             try:
                 if enhancement_type == 'draft_pick':
@@ -212,16 +216,16 @@ class DataEnhancer:
                 else:
                     # Generic enhancement - just clean up common issues
                     enhanced_item = self._generic_enhance(item)
-                
+
                 enhanced_data.append(enhanced_item)
-                
+
             except Exception as e:
                 logger.warning(f"Failed to enhance {enhancement_type} item: {e}")
                 # Fallback to basic data
                 enhanced_data.append({"error": f"Enhancement failed: {e}", "raw_item": str(item)})
-        
+
         return enhanced_data
-    
+
     def enhance_league_info(self, league_info) -> Dict[str, Any]:
         """Enhance league info data with readable information."""
         return {
@@ -248,7 +252,7 @@ class DataEnhancer:
             "game_code": str(getattr(league_info, 'game_code', 'Unknown')),
             "season": str(getattr(league_info, 'season', 'Unknown'))
         }
-    
+
     def enhance_player_stats(self, player_stats) -> Dict[str, Any]:
         """Enhance player stats data with readable information."""
         enhanced_data = {
@@ -267,7 +271,7 @@ class DataEnhancer:
             "player_stats": getattr(player_stats, 'player_stats', {}),
             "player_points": getattr(player_stats, 'player_points', {})
         }
-        
+
         # Add enhanced name information
         if hasattr(player_stats, 'name') and player_stats.name:
             name = player_stats.name
@@ -286,17 +290,17 @@ class DataEnhancer:
                 "ascii_first": 'Unknown',
                 "ascii_last": 'Unknown'
             })
-        
+
         # Resolve team key to team name if possible
         team_names = self.get_team_names()
         team_key = enhanced_data.get("editorial_team_key", "")
-        if team_key in team_names:
+        if isinstance(team_key, str) and team_key in team_names:
             enhanced_data["editorial_team_name"] = team_names[team_key]
         else:
             enhanced_data["editorial_team_name"] = enhanced_data.get("editorial_team_abbr", "Unknown")
-            
+
         return enhanced_data
-    
+
     def enhance_team_info(self, team_info) -> Dict[str, Any]:
         """Enhance team info data with readable information."""
         enhanced_data = {
@@ -314,7 +318,7 @@ class DataEnhancer:
             "has_draft_grade": getattr(team_info, 'has_draft_grade', False),
             "managers": []
         }
-        
+
         # Add manager information
         if hasattr(team_info, 'managers') and team_info.managers:
             for manager in team_info.managers:
@@ -327,10 +331,12 @@ class DataEnhancer:
                     "email": str(getattr(manager, 'email', 'Unknown')),
                     "image_url": str(getattr(manager, 'image_url', 'Unknown'))
                 }
-                enhanced_data["managers"].append(manager_data)
-        
+                managers_list = enhanced_data.get("managers")
+                if isinstance(managers_list, list):
+                    managers_list.append(manager_data)
+
         return enhanced_data
-    
+
     def enhance_game_info(self, game_info) -> Dict[str, Any]:
         """Enhance game info data with readable information."""
         return {
@@ -345,18 +351,18 @@ class DataEnhancer:
             "is_game_over": getattr(game_info, 'is_game_over', False),
             "is_offseason": getattr(game_info, 'is_offseason', False)
         }
-    
+
     def _generic_enhance(self, item) -> Dict[str, Any]:
         """Generic enhancement for unknown item types."""
         enhanced = {}
-        
+
         for attr in dir(item):
             if not attr.startswith('_'):
                 try:
                     value = getattr(item, attr)
                     if not callable(value):
                         enhanced[attr] = self._decode_bytes(value)
-                except:
+                except (AttributeError, TypeError):
                     pass
-                    
+
         return enhanced

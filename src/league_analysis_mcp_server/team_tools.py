@@ -3,81 +3,88 @@ MCP Team Tools for Yahoo Fantasy Sports API
 """
 
 import logging
-from typing import Dict, Any, List, Optional
-from datetime import datetime
+from typing import Dict, Any, Optional
 
 from yfpy import YahooFantasySportsQuery
 from fastmcp import FastMCP
-from .enhancement_helpers import DataEnhancer
 
 logger = logging.getLogger(__name__)
 
 
 def register_team_tools(mcp: FastMCP, app_state: Dict[str, Any]):
     """Register all MCP team tools."""
-    
+
     def get_yahoo_query(league_id: str, game_id: Optional[str] = None, sport: str = "nfl") -> YahooFantasySportsQuery:
         """Create a Yahoo Fantasy Sports Query object."""
         auth_manager = app_state["auth_manager"]
-        cache_manager = app_state["cache_manager"]
-        
+
         if not auth_manager.is_configured():
             raise ValueError("Yahoo authentication not configured. Run check_setup_status() to begin setup.")
-        
+
         auth_credentials = auth_manager.get_auth_credentials()
-        
+
         # Use game_id if provided, otherwise use current season
         if game_id:
             query_params = {**auth_credentials, 'game_id': game_id}
         else:
             query_params = {**auth_credentials, 'game_code': sport}
-        
+
         return YahooFantasySportsQuery(
             league_id=league_id,
             **query_params
         )
-    
+
     @mcp.tool()
-    def get_team_draft_results(league_id: str, team_id: str, sport: str = "nfl", season: Optional[str] = None) -> Dict[str, Any]:
+    def get_team_draft_results(league_id: str, team_id: str, sport: str = "nfl",
+                               season: Optional[str] = None) -> Dict[str, Any]:
         """
         Get draft results for a specific team.
-        
+
         Args:
             league_id: Yahoo league ID
-            team_id: Yahoo team ID  
+            team_id: Yahoo team ID
             sport: Sport code (nfl, nba, mlb, nhl)
             season: Specific season year (optional)
-        
+
         Returns:
             Team draft results information
         """
         try:
             cache_manager = app_state["cache_manager"]
-            
+
             # Check cache first
             cache_key_params = {"team_id": team_id}
             if season:
-                cached_data = cache_manager.get_historical_data(sport, season, league_id, "team_draft", **cache_key_params)
+                cached_data = cache_manager.get_historical_data(
+                    sport, season, league_id, "team_draft", **cache_key_params)
                 if cached_data:
                     return cached_data
             else:
                 cached_data = cache_manager.get_current_data(sport, league_id, "team_draft", **cache_key_params)
                 if cached_data:
                     return cached_data
-            
+
             # Get game_id if specific season requested
             game_id = None
             if season:
                 game_id = app_state["game_ids"].get(sport, {}).get(season)
                 if not game_id:
                     return {"error": f"No game_id found for {sport} {season}"}
-            
+
             yahoo_query = get_yahoo_query(league_id, game_id, sport)
             draft_results = yahoo_query.get_team_draft_results(team_id)
-            
+
             picks_data = []
-            if hasattr(draft_results, 'picks') and draft_results.picks:
-                for pick in draft_results.picks:
+            # Handle both direct list and wrapped object cases
+            if hasattr(draft_results, 'picks') and draft_results.picks:  # type: ignore
+                picks_list = draft_results.picks  # type: ignore
+            elif isinstance(draft_results, list):
+                picks_list = draft_results
+            else:
+                picks_list = []
+                
+            if picks_list:
+                for pick in picks_list:
                     pick_data = {
                         "pick": getattr(pick, 'pick', 0),
                         "round": getattr(pick, 'round', 0),
@@ -86,7 +93,7 @@ def register_team_tools(mcp: FastMCP, app_state: Dict[str, Any]):
                         "cost": getattr(pick, 'cost', 0)
                     }
                     picks_data.append(pick_data)
-            
+
             result = {
                 "league_id": league_id,
                 "team_id": team_id,
@@ -95,15 +102,15 @@ def register_team_tools(mcp: FastMCP, app_state: Dict[str, Any]):
                 "total_picks": len(picks_data),
                 "picks": picks_data
             }
-            
+
             # Cache the result
             if season:
                 cache_manager.set_historical_data(sport, season, league_id, "team_draft", result, **cache_key_params)
             else:
                 cache_manager.set_current_data(sport, league_id, "team_draft", result, **cache_key_params)
-            
+
             return result
-            
+
         except Exception as e:
             logger.error(f"Error getting team draft results: {e}")
             return {"error": str(e)}
@@ -112,48 +119,52 @@ def register_team_tools(mcp: FastMCP, app_state: Dict[str, Any]):
     def get_team_info(league_id: str, team_id: str, sport: str = "nfl", season: Optional[str] = None) -> Dict[str, Any]:
         """
         Get detailed information for a specific team.
-        
+
         Args:
             league_id: Yahoo league ID
             team_id: Yahoo team ID
             sport: Sport code (nfl, nba, mlb, nhl)
             season: Specific season year (optional)
-        
+
         Returns:
             Team information
         """
         try:
             cache_manager = app_state["cache_manager"]
-            
+
             # Check cache first
             cache_key_params = {"team_id": team_id}
             if season:
-                cached_data = cache_manager.get_historical_data(sport, season, league_id, "team_info", **cache_key_params)
+                cached_data = cache_manager.get_historical_data(
+                    sport, season, league_id, "team_info", **cache_key_params)
                 if cached_data:
                     return cached_data
             else:
                 cached_data = cache_manager.get_current_data(sport, league_id, "team_info", **cache_key_params)
                 if cached_data:
                     return cached_data
-            
+
             # Get game_id if specific season requested
             game_id = None
             if season:
                 game_id = app_state["game_ids"].get(sport, {}).get(season)
                 if not game_id:
                     return {"error": f"No game_id found for {sport} {season}"}
-            
+
             yahoo_query = get_yahoo_query(league_id, game_id, sport)
             team = yahoo_query.get_team_info(team_id)
-            
+
             result = {
                 "league_id": league_id,
-                "team_id": team_id,
+                "team_id": str(getattr(team, 'team_id', team_id)),
                 "sport": sport,
                 "season": season or "current",
                 "team_key": str(getattr(team, 'team_key', 'Unknown')),
-                "team_id": str(getattr(team, 'team_id', team_id)),
-                "name": str(getattr(team, 'name', 'Unknown')).replace('b"', '').replace('"', '').replace("b'", "").replace("'", ""),
+                "name": (
+                    str(getattr(team, 'name', 'Unknown'))
+                    .replace('b"', '').replace('"', '')
+                    .replace("b'", "").replace("'", "")
+                ),
                 "is_owned_by_current_login": getattr(team, 'is_owned_by_current_login', False),
                 "url": str(getattr(team, 'url', 'Unknown')),
                 "team_logos": getattr(team, 'team_logos', []),
@@ -165,7 +176,7 @@ def register_team_tools(mcp: FastMCP, app_state: Dict[str, Any]):
                 "has_draft_grade": getattr(team, 'has_draft_grade', False),
                 "managers": []
             }
-            
+
             # Add manager information if available
             if hasattr(team, 'managers') and team.managers:
                 for manager in team.managers:
@@ -178,58 +189,62 @@ def register_team_tools(mcp: FastMCP, app_state: Dict[str, Any]):
                         "email": str(getattr(manager, 'email', 'Unknown')),
                         "image_url": str(getattr(manager, 'image_url', 'Unknown'))
                     }
-                    result["managers"].append(manager_data)
-            
+                    managers_list = result.get("managers")
+                    if isinstance(managers_list, list):
+                        managers_list.append(manager_data)
+
             # Cache the result
             if season:
                 cache_manager.set_historical_data(sport, season, league_id, "team_info", result, **cache_key_params)
             else:
                 cache_manager.set_current_data(sport, league_id, "team_info", result, **cache_key_params)
-            
+
             return result
-            
+
         except Exception as e:
             logger.error(f"Error getting team info: {e}")
             return {"error": str(e)}
 
     @mcp.tool()
-    def get_team_matchups(league_id: str, team_id: str, sport: str = "nfl", season: Optional[str] = None) -> Dict[str, Any]:
+    def get_team_matchups(league_id: str, team_id: str, sport: str = "nfl",
+                          season: Optional[str] = None) -> Dict[str, Any]:
         """
         Get all matchups for a specific team.
-        
+
         Args:
             league_id: Yahoo league ID
             team_id: Yahoo team ID
             sport: Sport code (nfl, nba, mlb, nhl)
             season: Specific season year (optional)
-        
+
         Returns:
             Team matchups information
         """
         try:
             cache_manager = app_state["cache_manager"]
-            
+
             # Check cache first
             cache_key_params = {"team_id": team_id}
             if season:
-                cached_data = cache_manager.get_historical_data(sport, season, league_id, "team_matchups", **cache_key_params)
+                cached_data = cache_manager.get_historical_data(
+                    sport, season, league_id, "team_matchups", **cache_key_params)
                 if cached_data:
                     return cached_data
             else:
                 cached_data = cache_manager.get_current_data(sport, league_id, "team_matchups", **cache_key_params)
                 if cached_data:
                     return cached_data
-            
+
             # Get game_id if specific season requested
             game_id = None
             if season:
                 game_id = app_state["game_ids"].get(sport, {}).get(season)
                 if not game_id:
                     return {"error": f"No game_id found for {sport} {season}"}
-            
+
             yahoo_query = get_yahoo_query(league_id, game_id, sport)
             matchups = yahoo_query.get_team_matchups(team_id)
-            
+
             matchups_data = []
             if matchups:
                 for matchup in matchups:
@@ -237,14 +252,39 @@ def register_team_tools(mcp: FastMCP, app_state: Dict[str, Any]):
                     if hasattr(matchup, 'teams') and matchup.teams:
                         for team in matchup.teams:
                             team_data = {
-                                "team_key": str(getattr(team, 'team_key', 'Unknown')),
-                                "team_id": str(getattr(team, 'team_id', 'Unknown')),
-                                "name": str(getattr(team, 'name', 'Unknown')).replace('b"', '').replace('"', '').replace("b'", "").replace("'", ""),
-                                "team_points": getattr(team, 'team_points', {}),
-                                "team_projected_points": getattr(team, 'team_projected_points', {})
-                            }
+                                "team_key": str(
+                                    getattr(
+                                        team,
+                                        'team_key',
+                                        'Unknown')),
+                                "team_id": str(
+                                    getattr(
+                                        team,
+                                        'team_id',
+                                        'Unknown')),
+                                "name": str(
+                                    getattr(
+                                        team,
+                                        'name',
+                                        'Unknown')).replace(
+                                    'b"',
+                                    '').replace(
+                                    '"',
+                                    '').replace(
+                                        "b'",
+                                        "").replace(
+                                            "'",
+                                            ""),
+                                "team_points": getattr(
+                                    team,
+                                    'team_points',
+                                    {}),
+                                "team_projected_points": getattr(
+                                    team,
+                                    'team_projected_points',
+                                    {})}
                             teams_data.append(team_data)
-                    
+
                     matchup_data = {
                         "week": getattr(matchup, 'week', 0),
                         "week_start": str(getattr(matchup, 'week_start', 'Unknown')),
@@ -257,7 +297,7 @@ def register_team_tools(mcp: FastMCP, app_state: Dict[str, Any]):
                         "teams": teams_data
                     }
                     matchups_data.append(matchup_data)
-            
+
             result = {
                 "league_id": league_id,
                 "team_id": team_id,
@@ -266,59 +306,59 @@ def register_team_tools(mcp: FastMCP, app_state: Dict[str, Any]):
                 "matchups": matchups_data,
                 "total_matchups": len(matchups_data)
             }
-            
+
             # Cache the result
             if season:
                 cache_manager.set_historical_data(sport, season, league_id, "team_matchups", result, **cache_key_params)
             else:
                 cache_manager.set_current_data(sport, league_id, "team_matchups", result, **cache_key_params)
-            
+
             return result
-            
+
         except Exception as e:
             logger.error(f"Error getting team matchups: {e}")
             return {"error": str(e)}
 
     @mcp.tool()
-    def get_team_metadata(league_id: str, team_id: str, sport: str = "nfl", season: Optional[str] = None) -> Dict[str, Any]:
+    def get_team_metadata(league_id: str, team_id: str, sport: str = "nfl",
+                          season: Optional[str] = None) -> Dict[str, Any]:
         """
         Get team metadata and configuration.
-        
+
         Args:
             league_id: Yahoo league ID
             team_id: Yahoo team ID
             sport: Sport code (nfl, nba, mlb, nhl)
             season: Specific season year (optional)
-        
+
         Returns:
             Team metadata information
         """
         try:
             cache_manager = app_state["cache_manager"]
-            
+
             # Check cache first
             cache_key = f"{sport}/{league_id}/team_metadata/{team_id}/{season or 'current'}"
             cached_data = cache_manager.get(cache_key)
             if cached_data:
                 return cached_data
-            
+
             # Get game_id if specific season requested
             game_id = None
             if season:
                 game_id = app_state["game_ids"].get(sport, {}).get(season)
                 if not game_id:
                     return {"error": f"No game_id found for {sport} {season}"}
-            
+
             yahoo_query = get_yahoo_query(league_id, game_id, sport)
             metadata = yahoo_query.get_team_metadata(team_id)
-            
+
             result = {
                 "league_id": league_id,
-                "team_id": team_id,
+                "team_id": str(getattr(metadata, 'team_id', team_id)),
                 "sport": sport,
                 "season": season or "current",
                 "team_key": str(getattr(metadata, 'team_key', 'Unknown')),
-                "team_id": str(getattr(metadata, 'team_id', team_id)),
                 "name": str(getattr(metadata, 'name', 'Unknown')),
                 "is_owned_by_current_login": getattr(metadata, 'is_owned_by_current_login', False),
                 "url": str(getattr(metadata, 'url', 'Unknown')),
@@ -332,56 +372,62 @@ def register_team_tools(mcp: FastMCP, app_state: Dict[str, Any]):
                 "auction_budget_total": getattr(metadata, 'auction_budget_total', 0),
                 "auction_budget_spent": getattr(metadata, 'auction_budget_spent', 0)
             }
-            
+
             # Cache the result
             ttl = -1 if season else 300  # Historical data permanent, current data 5 min
             cache_manager.set(cache_key, result, ttl=ttl)
-            
+
             return result
-            
+
         except Exception as e:
             logger.error(f"Error getting team metadata: {e}")
             return {"error": str(e)}
 
     @mcp.tool()
-    def get_team_roster_player_info_by_date(league_id: str, team_id: str, selected_date: str, sport: str = "nfl", season: Optional[str] = None) -> Dict[str, Any]:
+    def get_team_roster_player_info_by_date(league_id: str,
+                                            team_id: str,
+                                            selected_date: str,
+                                            sport: str = "nfl",
+                                            season: Optional[str] = None) -> Dict[str,
+                                                                                  Any]:
         """
         Get team roster player information for a specific date.
-        
+
         Args:
             league_id: Yahoo league ID
             team_id: Yahoo team ID
             selected_date: Date in YYYY-MM-DD format
             sport: Sport code (nfl, nba, mlb, nhl)
             season: Specific season year (optional)
-        
+
         Returns:
             Team roster player information by date
         """
         try:
             cache_manager = app_state["cache_manager"]
-            
+
             # Check cache first
             cache_key_params = {"team_id": team_id, "date": selected_date}
             if season:
-                cached_data = cache_manager.get_historical_data(sport, season, league_id, "team_roster_date", **cache_key_params)
+                cached_data = cache_manager.get_historical_data(
+                    sport, season, league_id, "team_roster_date", **cache_key_params)
                 if cached_data:
                     return cached_data
             else:
                 cached_data = cache_manager.get_current_data(sport, league_id, "team_roster_date", **cache_key_params)
                 if cached_data:
                     return cached_data
-            
+
             # Get game_id if specific season requested
             game_id = None
             if season:
                 game_id = app_state["game_ids"].get(sport, {}).get(season)
                 if not game_id:
                     return {"error": f"No game_id found for {sport} {season}"}
-            
+
             yahoo_query = get_yahoo_query(league_id, game_id, sport)
             roster = yahoo_query.get_team_roster_player_info_by_date(team_id=team_id, chosen_date=selected_date)
-            
+
             players_data = []
             if roster:
                 for player in roster:
@@ -405,7 +451,7 @@ def register_team_tools(mcp: FastMCP, app_state: Dict[str, Any]):
                         "image_url": str(getattr(player, 'image_url', 'Unknown'))
                     }
                     players_data.append(player_data)
-            
+
             result = {
                 "league_id": league_id,
                 "team_id": team_id,
@@ -415,58 +461,61 @@ def register_team_tools(mcp: FastMCP, app_state: Dict[str, Any]):
                 "total_players": len(players_data),
                 "players": players_data
             }
-            
+
             # Cache the result
             if season:
-                cache_manager.set_historical_data(sport, season, league_id, "team_roster_date", result, **cache_key_params)
+                cache_manager.set_historical_data(
+                    sport, season, league_id, "team_roster_date", result, **cache_key_params)
             else:
                 cache_manager.set_current_data(sport, league_id, "team_roster_date", result, **cache_key_params)
-            
+
             return result
-            
+
         except Exception as e:
             logger.error(f"Error getting team roster player info by date: {e}")
             return {"error": str(e)}
 
     @mcp.tool()
-    def get_team_roster_player_info_by_week(league_id: str, team_id: str, week: int, sport: str = "nfl", season: Optional[str] = None) -> Dict[str, Any]:
+    def get_team_roster_player_info_by_week(league_id: str, team_id: str, week: int,
+                                            sport: str = "nfl", season: Optional[str] = None) -> Dict[str, Any]:
         """
         Get team roster player information for a specific week.
-        
+
         Args:
             league_id: Yahoo league ID
             team_id: Yahoo team ID
             week: Week number
             sport: Sport code (nfl, nba, mlb, nhl)
             season: Specific season year (optional)
-        
+
         Returns:
             Team roster player information by week
         """
         try:
             cache_manager = app_state["cache_manager"]
-            
+
             # Check cache first
             cache_key_params = {"team_id": team_id, "week": week}
             if season:
-                cached_data = cache_manager.get_historical_data(sport, season, league_id, "team_roster_week", **cache_key_params)
+                cached_data = cache_manager.get_historical_data(
+                    sport, season, league_id, "team_roster_week", **cache_key_params)
                 if cached_data:
                     return cached_data
             else:
                 cached_data = cache_manager.get_current_data(sport, league_id, "team_roster_week", **cache_key_params)
                 if cached_data:
                     return cached_data
-            
+
             # Get game_id if specific season requested
             game_id = None
             if season:
                 game_id = app_state["game_ids"].get(sport, {}).get(season)
                 if not game_id:
                     return {"error": f"No game_id found for {sport} {season}"}
-            
+
             yahoo_query = get_yahoo_query(league_id, game_id, sport)
             roster = yahoo_query.get_team_roster_player_info_by_week(team_id=team_id, chosen_week=week)
-            
+
             players_data = []
             if roster:
                 for player in roster:
@@ -490,7 +539,7 @@ def register_team_tools(mcp: FastMCP, app_state: Dict[str, Any]):
                         "image_url": str(getattr(player, 'image_url', 'Unknown'))
                     }
                     players_data.append(player_data)
-            
+
             result = {
                 "league_id": league_id,
                 "team_id": team_id,
@@ -500,57 +549,60 @@ def register_team_tools(mcp: FastMCP, app_state: Dict[str, Any]):
                 "total_players": len(players_data),
                 "players": players_data
             }
-            
+
             # Cache the result
             if season:
-                cache_manager.set_historical_data(sport, season, league_id, "team_roster_week", result, **cache_key_params)
+                cache_manager.set_historical_data(
+                    sport, season, league_id, "team_roster_week", result, **cache_key_params)
             else:
                 cache_manager.set_current_data(sport, league_id, "team_roster_week", result, **cache_key_params)
-            
+
             return result
-            
+
         except Exception as e:
             logger.error(f"Error getting team roster player info by week: {e}")
             return {"error": str(e)}
 
     @mcp.tool()
-    def get_team_roster_player_stats(league_id: str, team_id: str, sport: str = "nfl", season: Optional[str] = None) -> Dict[str, Any]:
+    def get_team_roster_player_stats(league_id: str, team_id: str, sport: str = "nfl",
+                                     season: Optional[str] = None) -> Dict[str, Any]:
         """
         Get team roster player statistics.
-        
+
         Args:
             league_id: Yahoo league ID
             team_id: Yahoo team ID
             sport: Sport code (nfl, nba, mlb, nhl)
             season: Specific season year (optional)
-        
+
         Returns:
             Team roster player statistics
         """
         try:
             cache_manager = app_state["cache_manager"]
-            
+
             # Check cache first
             cache_key_params = {"team_id": team_id}
             if season:
-                cached_data = cache_manager.get_historical_data(sport, season, league_id, "team_roster_stats", **cache_key_params)
+                cached_data = cache_manager.get_historical_data(
+                    sport, season, league_id, "team_roster_stats", **cache_key_params)
                 if cached_data:
                     return cached_data
             else:
                 cached_data = cache_manager.get_current_data(sport, league_id, "team_roster_stats", **cache_key_params)
                 if cached_data:
                     return cached_data
-            
+
             # Get game_id if specific season requested
             game_id = None
             if season:
                 game_id = app_state["game_ids"].get(sport, {}).get(season)
                 if not game_id:
                     return {"error": f"No game_id found for {sport} {season}"}
-            
+
             yahoo_query = get_yahoo_query(league_id, game_id, sport)
             roster = yahoo_query.get_team_roster_player_stats(team_id)
-            
+
             players_data = []
             if roster:
                 for player in roster:
@@ -565,7 +617,7 @@ def register_team_tools(mcp: FastMCP, app_state: Dict[str, Any]):
                         "player_points": getattr(player, 'player_points', {})
                     }
                     players_data.append(player_data)
-            
+
             result = {
                 "league_id": league_id,
                 "team_id": team_id,
@@ -574,58 +626,66 @@ def register_team_tools(mcp: FastMCP, app_state: Dict[str, Any]):
                 "total_players": len(players_data),
                 "players": players_data
             }
-            
+
             # Cache the result
             if season:
-                cache_manager.set_historical_data(sport, season, league_id, "team_roster_stats", result, **cache_key_params)
+                cache_manager.set_historical_data(
+                    sport, season, league_id, "team_roster_stats", result, **cache_key_params)
             else:
                 cache_manager.set_current_data(sport, league_id, "team_roster_stats", result, **cache_key_params)
-            
+
             return result
-            
+
         except Exception as e:
             logger.error(f"Error getting team roster player stats: {e}")
             return {"error": str(e)}
 
     @mcp.tool()
-    def get_team_roster_player_stats_by_week(league_id: str, team_id: str, week: int, sport: str = "nfl", season: Optional[str] = None) -> Dict[str, Any]:
+    def get_team_roster_player_stats_by_week(league_id: str,
+                                             team_id: str,
+                                             week: int,
+                                             sport: str = "nfl",
+                                             season: Optional[str] = None) -> Dict[str,
+                                                                                   Any]:
         """
         Get team roster player statistics for a specific week.
-        
+
         Args:
             league_id: Yahoo league ID
             team_id: Yahoo team ID
             week: Week number
             sport: Sport code (nfl, nba, mlb, nhl)
             season: Specific season year (optional)
-        
+
         Returns:
             Team roster player statistics by week
         """
         try:
             cache_manager = app_state["cache_manager"]
-            
+
             # Check cache first
             cache_key_params = {"team_id": team_id, "week": week}
             if season:
-                cached_data = cache_manager.get_historical_data(sport, season, league_id, "team_roster_stats_week", **cache_key_params)
+                cached_data = cache_manager.get_historical_data(
+                    sport, season, league_id, "team_roster_stats_week", **cache_key_params)
                 if cached_data:
                     return cached_data
             else:
-                cached_data = cache_manager.get_current_data(sport, league_id, "team_roster_stats_week", **cache_key_params)
+                cached_data = cache_manager.get_current_data(
+                    sport, league_id, "team_roster_stats_week", **cache_key_params)
                 if cached_data:
                     return cached_data
-            
+
             # Get game_id if specific season requested
             game_id = None
             if season:
                 game_id = app_state["game_ids"].get(sport, {}).get(season)
                 if not game_id:
                     return {"error": f"No game_id found for {sport} {season}"}
-            
+
             yahoo_query = get_yahoo_query(league_id, game_id, sport)
             roster = yahoo_query.get_team_roster_player_stats_by_week(team_id=team_id, chosen_week=week)
-            
+
             players_data = []
             if roster:
                 for player in roster:
@@ -640,7 +700,7 @@ def register_team_tools(mcp: FastMCP, app_state: Dict[str, Any]):
                         "player_points": getattr(player, 'player_points', {})
                     }
                     players_data.append(player_data)
-            
+
             result = {
                 "league_id": league_id,
                 "team_id": team_id,
@@ -650,64 +710,76 @@ def register_team_tools(mcp: FastMCP, app_state: Dict[str, Any]):
                 "total_players": len(players_data),
                 "players": players_data
             }
-            
+
             # Cache the result
             if season:
-                cache_manager.set_historical_data(sport, season, league_id, "team_roster_stats_week", result, **cache_key_params)
+                cache_manager.set_historical_data(
+                    sport,
+                    season,
+                    league_id,
+                    "team_roster_stats_week",
+                    result,
+                    **cache_key_params)
             else:
                 cache_manager.set_current_data(sport, league_id, "team_roster_stats_week", result, **cache_key_params)
-            
+
             return result
-            
+
         except Exception as e:
             logger.error(f"Error getting team roster player stats by week: {e}")
             return {"error": str(e)}
 
     @mcp.tool()
-    def get_team_standings(league_id: str, team_id: str, sport: str = "nfl", season: Optional[str] = None) -> Dict[str, Any]:
+    def get_team_standings(league_id: str, team_id: str, sport: str = "nfl",
+                           season: Optional[str] = None) -> Dict[str, Any]:
         """
         Get standings information for a specific team.
-        
+
         Args:
             league_id: Yahoo league ID
             team_id: Yahoo team ID
             sport: Sport code (nfl, nba, mlb, nhl)
             season: Specific season year (optional)
-        
+
         Returns:
             Team standings information
         """
         try:
             cache_manager = app_state["cache_manager"]
-            
+
             # Check cache first
             cache_key_params = {"team_id": team_id}
             if season:
-                cached_data = cache_manager.get_historical_data(sport, season, league_id, "team_standings", **cache_key_params)
+                cached_data = cache_manager.get_historical_data(
+                    sport, season, league_id, "team_standings", **cache_key_params)
                 if cached_data:
                     return cached_data
             else:
                 cached_data = cache_manager.get_current_data(sport, league_id, "team_standings", **cache_key_params)
                 if cached_data:
                     return cached_data
-            
+
             # Get game_id if specific season requested
             game_id = None
             if season:
                 game_id = app_state["game_ids"].get(sport, {}).get(season)
                 if not game_id:
                     return {"error": f"No game_id found for {sport} {season}"}
-            
+
             yahoo_query = get_yahoo_query(league_id, game_id, sport)
             team_standings = yahoo_query.get_team_standings(team_id)
-            
+
             result = {
                 "league_id": league_id,
                 "team_id": team_id,
                 "sport": sport,
                 "season": season or "current",
                 "team_key": str(getattr(team_standings, 'team_key', 'Unknown')),
-                "name": str(getattr(team_standings, 'name', 'Unknown')).replace('b"', '').replace('"', '').replace("b'", "").replace("'", ""),
+                "name": (
+                    str(getattr(team_standings, 'name', 'Unknown'))
+                    .replace('b"', '').replace('"', '')
+                    .replace("b'", "").replace("'", "")
+                ),
                 "rank": getattr(team_standings, 'rank', 0),
                 "wins": getattr(team_standings, 'wins', 0),
                 "losses": getattr(team_standings, 'losses', 0),
@@ -717,141 +789,195 @@ def register_team_tools(mcp: FastMCP, app_state: Dict[str, Any]):
                 "points_for": getattr(team_standings, 'points_for', 0.0),
                 "points_against": getattr(team_standings, 'points_against', 0.0)
             }
-            
+
             # Cache the result
             if season:
-                cache_manager.set_historical_data(sport, season, league_id, "team_standings", result, **cache_key_params)
+                cache_manager.set_historical_data(
+                    sport, season, league_id, "team_standings", result, **cache_key_params)
             else:
                 cache_manager.set_current_data(sport, league_id, "team_standings", result, **cache_key_params)
-            
+
             return result
-            
+
         except Exception as e:
             logger.error(f"Error getting team standings: {e}")
             return {"error": str(e)}
 
     @mcp.tool()
-    def get_team_stats(league_id: str, team_id: str, sport: str = "nfl", season: Optional[str] = None) -> Dict[str, Any]:
+    def get_team_stats(league_id: str, team_id: str, sport: str = "nfl",
+                       season: Optional[str] = None) -> Dict[str, Any]:
         """
         Get statistics for a specific team.
-        
+
         Args:
             league_id: Yahoo league ID
             team_id: Yahoo team ID
             sport: Sport code (nfl, nba, mlb, nhl)
             season: Specific season year (optional)
-        
+
         Returns:
             Team statistics information
         """
         try:
             cache_manager = app_state["cache_manager"]
-            
+
             # Check cache first
             cache_key_params = {"team_id": team_id}
             if season:
-                cached_data = cache_manager.get_historical_data(sport, season, league_id, "team_stats", **cache_key_params)
+                cached_data = cache_manager.get_historical_data(
+                    sport, season, league_id, "team_stats", **cache_key_params)
                 if cached_data:
                     return cached_data
             else:
                 cached_data = cache_manager.get_current_data(sport, league_id, "team_stats", **cache_key_params)
                 if cached_data:
                     return cached_data
-            
+
             # Get game_id if specific season requested
             game_id = None
             if season:
                 game_id = app_state["game_ids"].get(sport, {}).get(season)
                 if not game_id:
                     return {"error": f"No game_id found for {sport} {season}"}
-            
+
             yahoo_query = get_yahoo_query(league_id, game_id, sport)
             team_stats = yahoo_query.get_team_stats(team_id)
-            
+
             result = {
                 "league_id": league_id,
                 "team_id": team_id,
                 "sport": sport,
                 "season": season or "current",
-                "team_key": str(getattr(team_stats, 'team_key', 'Unknown')),
-                "name": str(getattr(team_stats, 'name', 'Unknown')).replace('b"', '').replace('"', '').replace("b'", "").replace("'", ""),
-                "team_stats": getattr(team_stats, 'team_stats', {}),
-                "team_points": getattr(team_stats, 'team_points', {}),
-                "team_remaining_games": getattr(team_stats, 'team_remaining_games', {})
-            }
-            
+                "team_key": str(
+                    getattr(
+                        team_stats,
+                        'team_key',
+                        'Unknown')),
+                "name": str(
+                    getattr(
+                        team_stats,
+                        'name',
+                        'Unknown')).replace(
+                    'b"',
+                    '').replace(
+                            '"',
+                            '').replace(
+                                "b'",
+                                "").replace(
+                                    "'",
+                                    ""),
+                "team_stats": getattr(
+                    team_stats,
+                    'team_stats',
+                    {}),
+                "team_points": getattr(
+                    team_stats,
+                    'team_points',
+                    {}),
+                "team_remaining_games": getattr(
+                    team_stats,
+                    'team_remaining_games',
+                    {})}
+
             # Cache the result
             if season:
                 cache_manager.set_historical_data(sport, season, league_id, "team_stats", result, **cache_key_params)
             else:
                 cache_manager.set_current_data(sport, league_id, "team_stats", result, **cache_key_params)
-            
+
             return result
-            
+
         except Exception as e:
             logger.error(f"Error getting team stats: {e}")
             return {"error": str(e)}
 
     @mcp.tool()
-    def get_team_stats_by_week(league_id: str, team_id: str, week: int, sport: str = "nfl", season: Optional[str] = None) -> Dict[str, Any]:
+    def get_team_stats_by_week(league_id: str, team_id: str, week: int, sport: str = "nfl",
+                               season: Optional[str] = None) -> Dict[str, Any]:
         """
         Get statistics for a specific team by week.
-        
+
         Args:
             league_id: Yahoo league ID
             team_id: Yahoo team ID
             week: Week number
             sport: Sport code (nfl, nba, mlb, nhl)
             season: Specific season year (optional)
-        
+
         Returns:
             Team statistics by week
         """
         try:
             cache_manager = app_state["cache_manager"]
-            
+
             # Check cache first
             cache_key_params = {"team_id": team_id, "week": week}
             if season:
-                cached_data = cache_manager.get_historical_data(sport, season, league_id, "team_stats_week", **cache_key_params)
+                cached_data = cache_manager.get_historical_data(
+                    sport, season, league_id, "team_stats_week", **cache_key_params)
                 if cached_data:
                     return cached_data
             else:
                 cached_data = cache_manager.get_current_data(sport, league_id, "team_stats_week", **cache_key_params)
                 if cached_data:
                     return cached_data
-            
+
             # Get game_id if specific season requested
             game_id = None
             if season:
                 game_id = app_state["game_ids"].get(sport, {}).get(season)
                 if not game_id:
                     return {"error": f"No game_id found for {sport} {season}"}
-            
+
             yahoo_query = get_yahoo_query(league_id, game_id, sport)
             team_stats = yahoo_query.get_team_stats_by_week(team_id=team_id, chosen_week=week)
-            
+
             result = {
                 "league_id": league_id,
                 "team_id": team_id,
                 "week": week,
                 "sport": sport,
                 "season": season or "current",
-                "team_key": str(getattr(team_stats, 'team_key', 'Unknown')),
-                "name": str(getattr(team_stats, 'name', 'Unknown')).replace('b"', '').replace('"', '').replace("b'", "").replace("'", ""),
-                "team_stats": getattr(team_stats, 'team_stats', {}),
-                "team_points": getattr(team_stats, 'team_points', {}),
-                "team_remaining_games": getattr(team_stats, 'team_remaining_games', {})
-            }
-            
+                "team_key": str(
+                    getattr(
+                        team_stats,
+                        'team_key',
+                        'Unknown')),
+                "name": str(
+                    getattr(
+                        team_stats,
+                        'name',
+                        'Unknown')).replace(
+                    'b"',
+                    '').replace(
+                            '"',
+                            '').replace(
+                                "b'",
+                                "").replace(
+                                    "'",
+                                    ""),
+                "team_stats": getattr(
+                    team_stats,
+                    'team_stats',
+                    {}),
+                "team_points": getattr(
+                    team_stats,
+                    'team_points',
+                    {}),
+                "team_remaining_games": getattr(
+                    team_stats,
+                    'team_remaining_games',
+                    {})}
+
             # Cache the result
             if season:
-                cache_manager.set_historical_data(sport, season, league_id, "team_stats_week", result, **cache_key_params)
+                cache_manager.set_historical_data(
+                    sport, season, league_id, "team_stats_week", result, **cache_key_params)
             else:
                 cache_manager.set_current_data(sport, league_id, "team_stats_week", result, **cache_key_params)
-            
+
             return result
-            
+
         except Exception as e:
             logger.error(f"Error getting team stats by week: {e}")
             return {"error": str(e)}

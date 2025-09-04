@@ -183,6 +183,31 @@ Supported sports: `nfl`, `nba`, `mlb`, `nhl`
 - **Cryptography 3.0+**: SSL certificate generation for OAuth callback server
 - **UV**: Package management and virtual environment
 
+## Windows Development Notes
+
+### Unicode/Encoding Issues
+**CRITICAL**: When running Python commands on Windows, avoid Unicode characters (like ✅, 🎉, etc.) in print statements or command outputs due to Windows console encoding limitations (cp1252).
+
+**Safe Testing Commands:**
+```bash
+# Test basic import (avoid Unicode in output)
+uv run python -c "import src.league_analysis_mcp_server; print('Import successful')"
+
+# Test server module directly 
+uv run python -m src.league_analysis_mcp_server --help
+
+# Run all tests
+uv run python test_server.py
+uv run python test_auth.py  
+uv run python test_startup.py
+```
+
+**Avoid:**
+```bash
+# DON'T USE - causes UnicodeEncodeError on Windows
+uv run python -c "print('✅ Success')"
+```
+
 ## Configuration Notes
 - Server runs on stdio transport (standard for MCP)
 - No HTTP endpoints - purely MCP protocol communication
