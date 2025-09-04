@@ -11,7 +11,7 @@ import threading
 import webbrowser
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from urllib.parse import urlparse, parse_qs
-from typing import Optional, Dict, Any, Union, Protocol
+from typing import Optional, Dict, Any, Protocol
 import tempfile
 import time
 import logging
@@ -180,9 +180,9 @@ class OAuthCallbackServer:
             ).serial_number(
                 x509.random_serial_number()
             ).not_valid_before(
-                datetime.datetime.utcnow()
+                datetime.datetime.now(datetime.timezone.utc)
             ).not_valid_after(
-                datetime.datetime.utcnow() + datetime.timedelta(days=365)
+                datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(days=365)
             ).add_extension(
                 x509.SubjectAlternativeName([
                     x509.DNSName("localhost"),

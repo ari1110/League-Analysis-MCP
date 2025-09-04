@@ -7,7 +7,7 @@ from typing import Dict, Any, Optional, List, Union
 
 from yfpy import YahooFantasySportsQuery
 from fastmcp import FastMCP
-from .enhancement_helpers import DataEnhancer
+from .enhancement_helpers import DataEnhancer, get_player_name
 from .historical import register_historical_tools
 from .analytics import register_analytics_tools
 
@@ -283,16 +283,19 @@ def register_tools(mcp: FastMCP, app_state: Dict[str, Any]) -> None:
 
             yahoo_query = get_yahoo_query(league_id, game_id, sport)
             roster = yahoo_query.get_team_roster_by_week(team_id, 1)  # Default to week 1
-
+            
+            # Use DataEnhancer for proper data extraction
+            data_enhancer = DataEnhancer(yahoo_query, cache_manager)
             players_data = []
             for player in roster:
+                enhanced_player = data_enhancer.enhance_player_stats(player)
                 player_data = {
-                    "player_id": getattr(player, 'player_id', 'Unknown'),
-                    "name": getattr(player, 'name', {}).get('full', 'Unknown'),
-                    "position_type": getattr(player, 'position_type', 'Unknown'),
-                    "eligible_positions": getattr(player, 'eligible_positions', []),
-                    "selected_position": getattr(player, 'selected_position', {}),
-                    "team_abbr": getattr(player, 'editorial_team_abbr', 'Unknown')
+                    "player_id": enhanced_player.get("player_id", "Unknown"),
+                    "name": enhanced_player.get("player_name", "Unknown"),
+                    "position_type": enhanced_player.get("position_type", "Unknown"),
+                    "eligible_positions": enhanced_player.get("eligible_positions", []),
+                    "selected_position": enhanced_player.get("selected_position", {}),
+                    "team_abbr": enhanced_player.get("editorial_team_abbr", "Unknown")
                 }
                 players_data.append(player_data)
 
@@ -726,7 +729,7 @@ def register_tools(mcp: FastMCP, app_state: Dict[str, Any]) -> None:
                     player_data = {
                         "player_key": str(getattr(player, 'player_key', 'Unknown')),
                         "player_id": str(getattr(player, 'player_id', 'Unknown')),
-                        "name": str(getattr(player, 'name', {}).get('full', 'Unknown')),
+                        "name": get_player_name(player),
                         "editorial_player_key": str(getattr(player, 'editorial_player_key', 'Unknown')),
                         "editorial_team_key": str(getattr(player, 'editorial_team_key', 'Unknown')),
                         "editorial_team_full_name": str(getattr(player, 'editorial_team_full_name', 'Unknown')),

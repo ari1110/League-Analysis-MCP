@@ -1,7 +1,7 @@
 ---
 created: 2025-09-04T19:09:18Z
-last_updated: 2025-09-04T19:09:18Z
-version: 1.0
+last_updated: 2025-09-04T22:09:53Z
+version: 1.2
 author: Claude Code PM System
 ---
 
@@ -97,6 +97,8 @@ tests/
 
 ### Test Files
 - **Prefix pattern**: `test_*.py`
+- **Comprehensive testing**: `test_comprehensive.py` with static analysis integration
+- **Domain-specific**: `test_auth.py`, `test_server.py`, `test_startup.py`, `test_mcp_connection.py`
 - **Domain-specific**: Each test file focuses on specific functionality
 - **Executable permissions**: All test files are executable for direct execution
 

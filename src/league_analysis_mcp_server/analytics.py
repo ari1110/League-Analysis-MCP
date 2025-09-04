@@ -3,7 +3,7 @@ Advanced Analytics and Pattern Recognition Tools for League Analysis MCP Server
 """
 
 import logging
-from typing import Dict, Any, List, Optional, Union, DefaultDict, TypedDict, Set
+from typing import Dict, Any, List, Optional, TypedDict, Set
 from collections import defaultdict, Counter
 import statistics
 

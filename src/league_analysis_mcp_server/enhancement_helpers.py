@@ -12,6 +12,16 @@ from yfpy import YahooFantasySportsQuery
 logger = logging.getLogger(__name__)
 
 
+def get_player_name(player) -> str:
+    """Extract player name safely from YFPY player object."""
+    name = getattr(player, 'name', None)
+    if name and hasattr(name, 'full'):
+        return name.full
+    elif name:
+        return str(name)
+    return 'Unknown'
+
+
 class DataEnhancer:
     """Centralized data enhancement for all YFPY methods."""
 
@@ -20,6 +30,21 @@ class DataEnhancer:
         self.cache_manager = cache_manager
         self._team_names_cache: Optional[Dict[str, str]] = None
         self._player_cache: Dict[str, Dict[str, Any]] = {}
+
+    def _decode_name_bytes(self, name_value) -> str:
+        """Decode byte strings from Yahoo API responses."""
+        if name_value is None:
+            return 'Unknown'
+        
+        # Convert to string first
+        name_str = str(name_value)
+        
+        # Handle byte string patterns
+        name_str = (name_str
+                   .replace('b"', '').replace('"', '')
+                   .replace("b'", "").replace("'", ""))
+        
+        return name_str if name_str != 'Unknown' else 'Unknown'
 
     def get_team_names(self) -> Dict[str, str]:
         """Get team key to team name mapping."""

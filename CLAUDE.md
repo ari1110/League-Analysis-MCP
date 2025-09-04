@@ -23,6 +23,10 @@ Using the test-runner agent ensures:
 - All issues are properly surfaced
 - No approval dialogs interrupt the workflow
 
+### 4. Use the parallel-worker sub-agent for complex multi-stream work.
+
+The parallel-worker agent executes parallel work streams in git worktrees. It coordinates multiple sub-agents working on different aspects of the same issue simultaneously, providing consolidated summaries to the main thread while shielding it from implementation complexity.
+
 ## Philosophy
 
 ### Error Handling

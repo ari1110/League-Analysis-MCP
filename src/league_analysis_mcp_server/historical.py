@@ -9,6 +9,7 @@ import statistics
 
 from yfpy import YahooFantasySportsQuery
 from fastmcp import FastMCP
+from .enhancement_helpers import get_player_name
 
 logger = logging.getLogger(__name__)
 
@@ -27,7 +28,7 @@ class ManagerStats(TypedDict):
 def register_historical_tools(mcp: FastMCP, app_state: Dict[str, Any]):
     """Register historical analysis tools."""
 
-    def get_yahoo_query(league_id: str, game_id: str, sport: str = "nfl") -> YahooFantasySportsQuery:
+    def get_yahoo_query(league_id: str, game_id: Optional[str], sport: str = "nfl") -> YahooFantasySportsQuery:
         """Create a Yahoo Fantasy Sports Query object for specific season."""
         auth_manager = app_state["auth_manager"]
 
@@ -136,7 +137,7 @@ def register_historical_tools(mcp: FastMCP, app_state: Dict[str, Any]):
 
     @mcp.tool()
     def get_season_transactions(league_id: str, sport: str = "nfl",
-                                season: Optional[str] = None) -> Dict[str, Any]:
+                                season: str = "current") -> Dict[str, Any]:
         """
         Get all transactions for a specific season.
 
@@ -152,12 +153,12 @@ def register_historical_tools(mcp: FastMCP, app_state: Dict[str, Any]):
             cache_manager = app_state["cache_manager"]
             game_ids = app_state["game_ids"]
 
-            if not season:
-                return {"error": "Season parameter is required"}
-
-            game_id = game_ids.get(sport, {}).get(season)
-            if not game_id:
-                return {"error": f"No game_id found for {sport} {season}"}
+            # Handle current season (use no game_id for current season)
+            game_id = None
+            if season and season != "current":
+                game_id = game_ids.get(sport, {}).get(season)
+                if not game_id:
+                    return {"error": f"No game_id found for {sport} {season}"}
 
             # Check cache first
             cached_data = cache_manager.get_historical_data(
@@ -184,7 +185,7 @@ def register_historical_tools(mcp: FastMCP, app_state: Dict[str, Any]):
                 for player in players:
                     player_data = {
                         "player_id": getattr(player, 'player_id', 'Unknown'),
-                        "name": getattr(player, 'name', {}).get('full', 'Unknown'),
+                        "name": get_player_name(player),
                         "transaction_data": getattr(player, 'transaction_data', {})
                     }
                     players_list = trans_data.get("players")

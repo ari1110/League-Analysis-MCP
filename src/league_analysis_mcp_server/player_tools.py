@@ -7,7 +7,7 @@ from typing import Dict, Any, Optional
 
 from yfpy import YahooFantasySportsQuery
 from fastmcp import FastMCP
-from .enhancement_helpers import DataEnhancer
+from .enhancement_helpers import DataEnhancer, get_player_name
 
 logger = logging.getLogger(__name__)
 
@@ -266,7 +266,7 @@ def register_player_tools(mcp: FastMCP, app_state: Dict[str, Any]):
                 "sport": sport,
                 "season": season or "current",
                 "player_id": str(getattr(stats, 'player_id', 'Unknown')),
-                "name": str(getattr(stats, 'name', {}).get('full', 'Unknown')),
+                "name": get_player_name(stats),
                 "editorial_team_abbr": str(getattr(stats, 'editorial_team_abbr', 'Unknown')),
                 "display_position": str(getattr(stats, 'display_position', 'Unknown')),
                 "player_stats": getattr(stats, 'player_stats', {}),
@@ -325,7 +325,7 @@ def register_player_tools(mcp: FastMCP, app_state: Dict[str, Any]):
                 "sport": sport,
                 "season": season or "current",
                 "player_id": str(getattr(stats, 'player_id', 'Unknown')),
-                "name": str(getattr(stats, 'name', {}).get('full', 'Unknown')),
+                "name": get_player_name(stats),
                 "editorial_team_abbr": str(getattr(stats, 'editorial_team_abbr', 'Unknown')),
                 "display_position": str(getattr(stats, 'display_position', 'Unknown')),
                 "player_stats": getattr(stats, 'player_stats', {}),

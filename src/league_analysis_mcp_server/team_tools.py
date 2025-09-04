@@ -7,6 +7,7 @@ from typing import Dict, Any, Optional
 
 from yfpy import YahooFantasySportsQuery
 from fastmcp import FastMCP
+from .enhancement_helpers import get_player_name, DataEnhancer
 
 logger = logging.getLogger(__name__)
 
@@ -434,7 +435,7 @@ def register_team_tools(mcp: FastMCP, app_state: Dict[str, Any]):
                     player_data = {
                         "player_key": str(getattr(player, 'player_key', 'Unknown')),
                         "player_id": str(getattr(player, 'player_id', 'Unknown')),
-                        "name": str(getattr(player, 'name', {}).get('full', 'Unknown')),
+                        "name": get_player_name(player),
                         "editorial_player_key": str(getattr(player, 'editorial_player_key', 'Unknown')),
                         "editorial_team_key": str(getattr(player, 'editorial_team_key', 'Unknown')),
                         "editorial_team_full_name": str(getattr(player, 'editorial_team_full_name', 'Unknown')),
@@ -522,7 +523,7 @@ def register_team_tools(mcp: FastMCP, app_state: Dict[str, Any]):
                     player_data = {
                         "player_key": str(getattr(player, 'player_key', 'Unknown')),
                         "player_id": str(getattr(player, 'player_id', 'Unknown')),
-                        "name": str(getattr(player, 'name', {}).get('full', 'Unknown')),
+                        "name": get_player_name(player),
                         "editorial_player_key": str(getattr(player, 'editorial_player_key', 'Unknown')),
                         "editorial_team_key": str(getattr(player, 'editorial_team_key', 'Unknown')),
                         "editorial_team_full_name": str(getattr(player, 'editorial_team_full_name', 'Unknown')),
@@ -609,7 +610,7 @@ def register_team_tools(mcp: FastMCP, app_state: Dict[str, Any]):
                     player_data = {
                         "player_key": str(getattr(player, 'player_key', 'Unknown')),
                         "player_id": str(getattr(player, 'player_id', 'Unknown')),
-                        "name": str(getattr(player, 'name', {}).get('full', 'Unknown')),
+                        "name": get_player_name(player),
                         "editorial_team_abbr": str(getattr(player, 'editorial_team_abbr', 'Unknown')),
                         "display_position": str(getattr(player, 'display_position', 'Unknown')),
                         "selected_position": getattr(player, 'selected_position', {}),
@@ -692,7 +693,7 @@ def register_team_tools(mcp: FastMCP, app_state: Dict[str, Any]):
                     player_data = {
                         "player_key": str(getattr(player, 'player_key', 'Unknown')),
                         "player_id": str(getattr(player, 'player_id', 'Unknown')),
-                        "name": str(getattr(player, 'name', {}).get('full', 'Unknown')),
+                        "name": get_player_name(player),
                         "editorial_team_abbr": str(getattr(player, 'editorial_team_abbr', 'Unknown')),
                         "display_position": str(getattr(player, 'display_position', 'Unknown')),
                         "selected_position": getattr(player, 'selected_position', {}),
@@ -769,17 +770,17 @@ def register_team_tools(mcp: FastMCP, app_state: Dict[str, Any]):
             yahoo_query = get_yahoo_query(league_id, game_id, sport)
             team_standings = yahoo_query.get_team_standings(team_id)
 
+            # Use DataEnhancer for proper data extraction
+            data_enhancer = DataEnhancer(yahoo_query, cache_manager)
+            team_name = data_enhancer._decode_name_bytes(getattr(team_standings, 'name', 'Unknown'))
+
             result = {
                 "league_id": league_id,
                 "team_id": team_id,
                 "sport": sport,
                 "season": season or "current",
                 "team_key": str(getattr(team_standings, 'team_key', 'Unknown')),
-                "name": (
-                    str(getattr(team_standings, 'name', 'Unknown'))
-                    .replace('b"', '').replace('"', '')
-                    .replace("b'", "").replace("'", "")
-                ),
+                "name": team_name,
                 "rank": getattr(team_standings, 'rank', 0),
                 "wins": getattr(team_standings, 'wins', 0),
                 "losses": getattr(team_standings, 'losses', 0),
@@ -843,29 +844,17 @@ def register_team_tools(mcp: FastMCP, app_state: Dict[str, Any]):
             yahoo_query = get_yahoo_query(league_id, game_id, sport)
             team_stats = yahoo_query.get_team_stats(team_id)
 
+            # Use DataEnhancer for proper data extraction
+            data_enhancer = DataEnhancer(yahoo_query, cache_manager)
+            team_name = data_enhancer._decode_name_bytes(getattr(team_stats, 'name', 'Unknown'))
+
             result = {
                 "league_id": league_id,
                 "team_id": team_id,
                 "sport": sport,
                 "season": season or "current",
-                "team_key": str(
-                    getattr(
-                        team_stats,
-                        'team_key',
-                        'Unknown')),
-                "name": str(
-                    getattr(
-                        team_stats,
-                        'name',
-                        'Unknown')).replace(
-                    'b"',
-                    '').replace(
-                            '"',
-                            '').replace(
-                                "b'",
-                                "").replace(
-                                    "'",
-                                    ""),
+                "team_key": str(getattr(team_stats, 'team_key', 'Unknown')),
+                "name": team_name,
                 "team_stats": getattr(
                     team_stats,
                     'team_stats',

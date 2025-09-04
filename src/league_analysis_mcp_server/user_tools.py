@@ -7,6 +7,7 @@ from typing import Dict, Any, Optional
 
 from yfpy import YahooFantasySportsQuery
 from fastmcp import FastMCP
+from .enhancement_helpers import DataEnhancer
 
 logger = logging.getLogger(__name__)
 
@@ -130,17 +131,18 @@ def register_user_tools(mcp: FastMCP, app_state: Dict[str, Any]) -> None:
             yahoo_query = get_yahoo_query("temp", game_id, sport)  # League ID not needed for user teams
             user_teams = yahoo_query.get_user_teams()
 
+            # Use DataEnhancer for proper data extraction
+            data_enhancer = DataEnhancer(yahoo_query, cache_manager)
             teams_data = []
             if user_teams:
                 for team in user_teams:
+                    # Extract team name properly using DataEnhancer techniques
+                    team_name = data_enhancer._decode_name_bytes(getattr(team, 'name', 'Unknown'))
+                    
                     team_data = {
                         "team_key": str(getattr(team, 'team_key', 'Unknown')),
                         "team_id": str(getattr(team, 'team_id', 'Unknown')),
-                        "name": (
-                            str(getattr(team, 'name', 'Unknown'))
-                            .replace('b"', '').replace('"', '')
-                            .replace("b'", "").replace("'", "")
-                        ),
+                        "name": team_name,
                         "is_owned_by_current_login": getattr(team, 'is_owned_by_current_login', False),
                         "url": str(getattr(team, 'url', 'Unknown')),
                         "team_logos": getattr(team, 'team_logos', []),
