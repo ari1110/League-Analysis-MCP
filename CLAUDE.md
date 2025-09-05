@@ -23,9 +23,16 @@ Using the test-runner agent ensures:
 - All issues are properly surfaced
 - No approval dialogs interrupt the workflow
 
-### 4. Use the parallel-worker sub-agent for complex multi-stream work.
+### 4. Use parallel execution for independent tasks.
 
-The parallel-worker agent executes parallel work streams in git worktrees. It coordinates multiple sub-agents working on different aspects of the same issue simultaneously, providing consolidated summaries to the main thread while shielding it from implementation complexity.
+**For independent tasks (like fixing errors in different files):**
+- Use **multiple Task tool calls in a single message** to launch agents simultaneously
+- Use **Jujutsu working copies** (`jj new -m "description"`) for true isolation
+- Each agent works in its own commit/working copy with zero conflicts
+
+**For complex coordinated work:**
+- Use the **parallel-worker sub-agent** for git worktree coordination
+- It manages dependencies and consolidates results across work streams
 
 ## Philosophy
 
@@ -76,6 +83,10 @@ The parallel-worker agent executes parallel work streams in git worktrees. It co
 # Install dependencies and build
 uv sync --all-extras
 
+# Type checking (both tools available)
+uv run pyright src/        # Fast type checking with good inference
+uv run mypy .             # Strict type checking for CI
+
 # Run tests (all test files required for CI/CD)
 uv run python test_server.py
 uv run python test_auth.py
@@ -92,6 +103,23 @@ uv run python -m src.league_analysis_mcp_server
 
 # Version management (keeps pyproject.toml and config/settings.json synchronized)
 uv run python bump_version.py patch  # or minor/major
+```
+
+### Parallel Development Workflow
+```bash
+# Initialize jujutsu for parallel work
+jj git init --colocate
+jj bookmark track main@origin
+
+# Create isolated working copies for parallel fixes
+jj new -m "fix-auth-errors: Fix pyright errors in test_auth.py"
+jj new -m "fix-cache-errors: Fix pyright errors in test_cache.py"
+
+# Switch between working copies
+jj edit <commit-id>
+
+# Merge fixes back (jj handles conflicts automatically)
+jj rebase -r <commit> -d main
 ```
 
 ### Publishing Workflow

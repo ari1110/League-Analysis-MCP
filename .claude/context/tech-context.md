@@ -14,6 +14,13 @@ author: Claude Code PM System
 - **UV Package Manager** - Modern Python package and dependency management
 - **AsyncIO** - Asynchronous programming for MCP protocol support
 
+### Development & Version Control
+- **Git** - Primary version control with worktree support
+- **Jujutsu (jj)** - Advanced VCS for parallel development workflows
+  - Colocated with Git for seamless integration
+  - Enables true parallel agent execution through isolated working copies
+  - Superior conflict resolution for parallel fixes
+
 ### Key Framework Dependencies
 
 #### MCP Framework
@@ -59,16 +66,22 @@ author: Claude Code PM System
 
 ### Development & Quality Tools
 
-#### Code Quality
+#### Code Quality & Type Checking
+- **Pyright 1.1.405+** - Fast type checker with superior inference (development)
+- **MyPy 1.17.1+** - Strict static type checking (CI/CD)
 - **Flake8 7.1.1+** - Code style linting
-- **Autopep8 2.3.2+** - Automatic code formatting
-- **MyPy 1.17.1+** - Static type checking
 - **Black 23.0.0+** (dev) - Code formatter
 - **isort 5.12.0+** (dev) - Import sorting
+- **types-requests** - Type stubs for external dependencies
 
 #### Testing Framework
 - **pytest 7.0.0+** - Primary testing framework
 - **pytest-asyncio 0.21.0+** - AsyncIO testing support
+
+#### Parallel Development Tools
+- **Multiple Task Tool Calls** - Simultaneous agent execution
+- **Jujutsu Working Copies** - Isolated parallel development environments
+- **repo-issue-fixer agent** - Automated code quality and type error resolution
 
 ## Architecture Technologies
 
