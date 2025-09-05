@@ -128,9 +128,9 @@ class FunctionalTestCase(unittest.TestCase):
         # Create test auth manager  
         self.auth_manager = EnhancedYahooAuthManager()
         
-        # Mock the Yahoo API client
+        # Mock the Yahoo API client in tools_impl module
         self.yahoo_client_patcher = patch(
-            'league_analysis_mcp_server.tools.get_yahoo_query'
+            'league_analysis_mcp_server.tools_impl._get_yahoo_query'
         )
         self.mock_yahoo_query = self.yahoo_client_patcher.start()
         

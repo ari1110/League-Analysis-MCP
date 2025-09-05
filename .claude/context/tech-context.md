@@ -1,7 +1,7 @@
 ---
 created: 2025-09-04T19:09:18Z
-last_updated: 2025-09-04T20:18:05Z
-version: 1.1
+last_updated: 2025-09-04T23:12:23Z
+version: 1.2
 author: Claude Code PM System
 ---
 
@@ -13,6 +13,14 @@ author: Claude Code PM System
 - **Python 3.10+** - Minimum supported version
 - **UV Package Manager** - Modern Python package and dependency management
 - **AsyncIO** - Asynchronous programming for MCP protocol support
+
+### Development & Version Control
+- **Git** - Primary version control with worktree support
+- **Jujutsu (jj)** - Advanced VCS for parallel development workflows
+  - Colocated with Git for seamless integration
+  - Enables true parallel agent execution through isolated working copies
+  - Superior conflict resolution for parallel fixes
+  - Working copies as commits - enables parallel development without merge conflicts
 
 ### Key Framework Dependencies
 
@@ -59,16 +67,23 @@ author: Claude Code PM System
 
 ### Development & Quality Tools
 
-#### Code Quality
+#### Code Quality & Type Checking
+- **Pyright 1.1.405+** - Fast type checker with superior inference (development)
+- **MyPy 1.17.1+** - Strict static type checking (CI/CD)
 - **Flake8 7.1.1+** - Code style linting
-- **Autopep8 2.3.2+** - Automatic code formatting
-- **MyPy 1.17.1+** - Static type checking
 - **Black 23.0.0+** (dev) - Code formatter
 - **isort 5.12.0+** (dev) - Import sorting
+- **types-requests** - Type stubs for external dependencies
 
 #### Testing Framework
 - **pytest 7.0.0+** - Primary testing framework
 - **pytest-asyncio 0.21.0+** - AsyncIO testing support
+
+#### Parallel Development Tools
+- **Multiple Task Tool Calls** - Simultaneous agent execution for true parallelism
+- **Jujutsu Working Copies** - Isolated parallel development environments via `jj new` 
+- **repo-issue-fixer agent** - Automated code quality and type error resolution
+- **Testable Architecture Pattern** - Private `_impl` functions + public API + MCP wrappers
 
 ## Architecture Technologies
 
@@ -116,15 +131,24 @@ author: Claude Code PM System
 
 ### CI/CD & Testing Technology
 - **GitHub Actions** - Automated testing and publishing
-- **Automated Publishing** - Tag-based release to PyPI
+- **Automated Publishing** - Tag-based release to PyPI (v0.3.0+ published successfully)
 - **Version Management** - Synchronized between pyproject.toml and config files
 - **Testing Matrix** - Python 3.10, 3.11, 3.12 compatibility
+
+#### Comprehensive Testing Framework (v0.3.0+)
+- **Functional Testing Suite** - 6 test files validating real user scenarios and workflows
+- **Base Test Classes** - `FunctionalTestCase` and `IntegrationTestCase` with Yahoo API mocking
+- **Test Fixtures** - Realistic Yahoo API response data in JSON format for consistent testing
+- **Integration Testing** - Real Yahoo API testing with credential validation (`test_live_data.py`)
+- **Test Runner** - `run_functional_tests.py` with environment checking and detailed reporting
+- **Error Scenario Testing** - Comprehensive edge case and error condition validation
 
 #### Static Analysis Integration
 - **Ruff** - Python linting and code quality analysis
 - **MyPy** - Static type checking with --ignore-missing-imports
 - **Pylance** - IDE-based diagnostics via mcp__ide__getDiagnostics tool
 - **Comprehensive Test Suite** - `tests/test_comprehensive.py` integrating all analysis tools
+- **Windows Compatibility** - Unicode-safe testing output for cross-platform development
 
 ## Platform Support
 

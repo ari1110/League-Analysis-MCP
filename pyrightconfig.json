@@ -1,0 +1,23 @@
+{
+  "include": [
+    "src",
+    "tests"
+  ],
+  "exclude": [
+    "build",
+    "dist",
+    ".mypy_cache",
+    ".pytest_cache"
+  ],
+  "pythonVersion": "3.12",
+  "pythonPlatform": "Windows",
+  "typeCheckingMode": "standard",
+  "useLibraryCodeForTypes": true,
+  "reportMissingImports": "error",
+  "reportMissingTypeStubs": "warning",
+  "reportUnknownMemberType": "none",
+  "reportUnknownArgumentType": "none",
+  "reportUnknownVariableType": "none",
+  "reportUnknownLambdaType": "none",
+  "stubPath": "typings"
+}

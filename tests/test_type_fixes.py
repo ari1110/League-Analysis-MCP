@@ -6,8 +6,7 @@ Comprehensive test for all type fixes and missing module coverage
 import sys
 import os
 from pathlib import Path
-from typing import Dict, Any, List
-import json
+# Types and json not needed for basic import testing
 
 # Add src to path so we can import our modules
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))

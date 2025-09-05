@@ -6,6 +6,7 @@ Tests complete user journeys from authentication to analysis,
 validating that users can achieve their fantasy sports goals.
 """
 
+import os
 import sys
 from pathlib import Path
 from unittest.mock import patch, Mock
@@ -15,10 +16,28 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent / "src"))
 
 from .base import FunctionalTestCase, IntegrationTestCase, TestFixtures, TestDataBuilder
 from league_analysis_mcp_server.server import (
-    get_server_info, check_setup_status, get_league_info, get_standings,
-    analyze_draft_strategy, evaluate_manager_skill, predict_trade_likelihood
+    get_server_info, check_setup_status
+)
+from league_analysis_mcp_server.analytics import (
+    analyze_draft_strategy,
+    evaluate_manager_skill,
+    predict_trade_likelihood
 )
 from league_analysis_mcp_server.server import app_state
+
+# Create utility functions that directly call implementation functions with app_state
+from league_analysis_mcp_server.tools_impl import (
+    get_league_info_impl,
+    get_standings_impl
+)
+
+def get_league_info(league_id: str, sport: str = "nfl", season=None):
+    """Wrapper for get_league_info implementation."""
+    return get_league_info_impl(league_id, sport, season, app_state)
+
+def get_standings(league_id: str, sport: str = "nfl", season=None):
+    """Wrapper for get_standings implementation.""" 
+    return get_standings_impl(league_id, sport, season, app_state)
 
 
 class TestNewUserWorkflow(FunctionalTestCase):
@@ -509,6 +528,7 @@ class TestDraftToChampionshipWorkflow(FunctionalTestCase):
         """Test comprehensive season wrap-up analysis."""
         with patch('league_analysis_mcp_server.analytics.get_yahoo_query') as mock_query:
             # Create end-of-season summary data
+            fixture_data = TestFixtures.load_fixture("yahoo_responses.json")
             season_summary = {
                 "final_standings": fixture_data["historical_seasons"]["2023"]["final_standings"],
                 "season_stats": {

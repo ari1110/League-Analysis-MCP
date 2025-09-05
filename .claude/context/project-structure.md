@@ -1,7 +1,7 @@
 ---
 created: 2025-09-04T19:09:18Z
-last_updated: 2025-09-04T22:09:53Z
-version: 1.2
+last_updated: 2025-09-04T23:12:23Z
+version: 1.3
 author: Claude Code PM System
 ---
 
@@ -36,6 +36,7 @@ src/league_analysis_mcp_server/
 ├── oauth_callback_server.py # HTTPS callback server for automated OAuth
 ├── cache.py                # Caching layer with TTL and size management
 ├── tools.py                # Basic MCP tools (league info, standings, rosters)
+├── tools_impl.py           # Implementation functions for MCP tools (testable architecture)
 ├── historical.py           # Historical analysis tools (multi-season data)
 ├── analytics.py            # Advanced analytics (manager profiling, predictions)
 ├── resources.py            # MCP resources (read-only data access)
@@ -57,11 +58,23 @@ config/
 ### Test Structure (`tests/`)
 ```
 tests/
+├── functional/              # Comprehensive functional test suite (v0.3.0+)
+│   ├── base.py             # Base test classes with Yahoo API mocking
+│   ├── fixtures/           # Test data and Yahoo API response fixtures  
+│   ├── test_analytics.py   # Analytics accuracy and pattern recognition tests
+│   ├── test_auth.py        # Authentication workflow validation tests
+│   ├── test_cache.py       # Cache behavior and TTL management tests
+│   ├── test_errors.py      # Error handling and edge case tests
+│   ├── test_tools.py       # MCP tool functionality validation tests
+│   └── test_workflows.py   # End-to-end user workflow tests
+├── integration/            # Real Yahoo API integration tests
+│   └── test_live_data.py   # Live API testing with credential validation
+├── run_functional_tests.py # Comprehensive test runner with environment setup
+├── test_comprehensive.py   # Static analysis integration (Ruff, MyPy, IDE)
 ├── test_server.py          # Server initialization and import tests
 ├── test_auth.py            # Authentication system tests  
 ├── test_startup.py         # Startup and configuration tests
-├── test_mcp_connection.py  # MCP protocol connection tests
-└── test_type_fixes.py      # Type safety and validation tests
+└── test_mcp_connection.py  # MCP protocol connection tests
 ```
 
 ### Claude Code Management (`.claude/`)
@@ -96,10 +109,12 @@ tests/
 - **Clear purpose**: Filename indicates content and audience
 
 ### Test Files
-- **Prefix pattern**: `test_*.py`
-- **Comprehensive testing**: `test_comprehensive.py` with static analysis integration
-- **Domain-specific**: `test_auth.py`, `test_server.py`, `test_startup.py`, `test_mcp_connection.py`
-- **Domain-specific**: Each test file focuses on specific functionality
+- **Functional Tests** (`functional/`): 6 comprehensive test files validating real user scenarios
+- **Integration Tests** (`integration/`): Real Yahoo API testing with credential validation
+- **Test Infrastructure**: Base classes (`FunctionalTestCase`, `IntegrationTestCase`) with Yahoo API mocking
+- **Test Runner**: `run_functional_tests.py` with environment checking and detailed reporting
+- **Static Analysis**: `test_comprehensive.py` integrating Ruff, MyPy, and IDE diagnostics
+- **Structural Tests**: `test_server.py`, `test_auth.py`, `test_startup.py` for core functionality
 - **Executable permissions**: All test files are executable for direct execution
 
 ## Module Organization

@@ -13,9 +13,12 @@ from pathlib import Path
 # Add src to path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent / "src"))
 
-from tests.functional.base import IntegrationTestCase
+from ..functional.base import IntegrationTestCase
 from league_analysis_mcp_server.tools import (
     get_league_info, get_standings, get_team_roster, get_matchups
+)
+from league_analysis_mcp_server.analytics import (
+    analyze_draft_strategy, evaluate_manager_skill
 )
 from league_analysis_mcp_server.server import app_state
 
@@ -119,7 +122,6 @@ class TestLiveAnalyticsData(IntegrationTestCase):
     
     def test_live_draft_analysis(self):
         """Test draft analysis with real data."""
-        from league_analysis_mcp_server.analytics import analyze_draft_strategy
         
         # This might not work for all leagues (data availability)
         try:
@@ -138,7 +140,6 @@ class TestLiveAnalyticsData(IntegrationTestCase):
     
     def test_live_manager_evaluation(self):
         """Test manager evaluation with real data."""
-        from league_analysis_mcp_server.analytics import evaluate_manager_skill
         
         # Get a real team ID first
         standings = get_standings(self.test_league_id, "nfl")
@@ -165,6 +166,13 @@ class TestLiveAnalyticsData(IntegrationTestCase):
 
 class TestLiveErrorHandling(IntegrationTestCase):
     """Test error handling with real Yahoo API."""
+    
+    def setUp(self):
+        super().setUp()
+        app_state["cache_manager"] = self.cache_manager
+        app_state["auth_manager"] = self.auth_manager
+        
+        self.test_league_id = os.environ.get("TEST_LEAGUE_ID", "123456")
     
     def test_invalid_league_id_handling(self):
         """Test handling of invalid league IDs with real API."""

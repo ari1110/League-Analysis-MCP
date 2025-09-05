@@ -8,11 +8,12 @@ Supports different test modes: mock-based functional tests and real API integrat
 
 import sys
 import os
+import json
 import subprocess
 import argparse
 import time
 from pathlib import Path
-from typing import List, Dict, Any
+from typing import Dict, Any, Optional
 
 
 class FunctionalTestRunner:
@@ -41,7 +42,7 @@ class FunctionalTestRunner:
     
     def check_environment(self) -> Dict[str, Any]:
         """Check test environment and dependencies."""
-        env_status = {
+        env_status: Dict[str, Any] = {
             "python_available": True,
             "uv_available": False,
             "dependencies_installed": False,
@@ -77,12 +78,12 @@ class FunctionalTestRunner:
         
         return env_status
     
-    def run_functional_tests(self, verbose: bool = False, specific_test: str = None) -> Dict[str, Any]:
+    def run_functional_tests(self, verbose: bool = False, specific_test: Optional[str] = None) -> Dict[str, Any]:
         """Run mock-based functional tests."""
         print("Running Functional Tests (Mock-based)")
         print("=" * 60)
         
-        results = {
+        results: Dict[str, Any] = {
             "passed": 0,
             "failed": 0,
             "errors": [],
@@ -169,7 +170,7 @@ class FunctionalTestRunner:
         print("\nRunning Integration Tests (Real Yahoo API)")
         print("=" * 60)
         
-        results = {
+        results: Dict[str, Any] = {
             "passed": 0,
             "failed": 0,
             "skipped": 0,
@@ -249,7 +250,7 @@ class FunctionalTestRunner:
         print("\nRunning Comprehensive Analysis")
         print("=" * 60)
         
-        analysis_results = {
+        analysis_results: Dict[str, Any] = {
             "static_analysis": {"passed": False, "issues": []},
             "coverage_analysis": {"passed": False, "coverage": 0},
             "performance_check": {"passed": False, "issues": []}
@@ -269,7 +270,6 @@ class FunctionalTestRunner:
                 )
                 
                 if result.stdout.strip():
-                    import json
                     issues = json.loads(result.stdout)
                     analysis_results["static_analysis"]["issues"].extend([
                         f"Ruff: {issue['filename']}:{issue['location']['row']} - {issue['message']}"
@@ -456,10 +456,10 @@ def main():
     else:
         print("PASS: Environment ready for testing\n")
     
-    # Initialize results
-    functional_results = {"passed": 0, "failed": 0, "errors": [], "test_results": {}}
-    integration_results = {"passed": 0, "failed": 0, "skipped": 0, "errors": [], "test_results": {}}
-    analysis_results = {"static_analysis": {"passed": True, "issues": []}}
+    # Initialize results with proper typing
+    functional_results: Dict[str, Any] = {"passed": 0, "failed": 0, "errors": [], "test_results": {}}
+    integration_results: Dict[str, Any] = {"passed": 0, "failed": 0, "skipped": 0, "errors": [], "test_results": {}}
+    analysis_results: Dict[str, Any] = {"static_analysis": {"passed": True, "issues": []}}
     
     # Run tests based on mode
     if args.mode in ["functional", "all"]:

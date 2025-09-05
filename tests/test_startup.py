@@ -5,7 +5,6 @@ Test MCP server startup without actually running it
 
 import sys
 import os
-import signal
 from pathlib import Path
 
 # Add src to path so we can import our modules
