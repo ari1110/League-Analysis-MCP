@@ -16,34 +16,29 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent / "src"))
 from .base import FunctionalTestCase, TestFixtures
 
 # Import the modules containing MCP tools
-# Import the MCP tool functions directly (decorated functions are importable)
-try:
-    from league_analysis_mcp_server.tools import (
-        get_league_info, get_standings, get_team_roster, get_matchups
-    )
-except ImportError as e:
-    print(f"Import error in test_tools.py: {e}")
-    # Define placeholder functions for testing
-    def get_league_info(*args, **kwargs):
-        return {"error": "Function not available"}
-    def get_standings(*args, **kwargs):
-        return {"error": "Function not available"}
-    def get_team_roster(*args, **kwargs):
-        return {"error": "Function not available"}
-    def get_matchups(*args, **kwargs):
-        return {"error": "Function not available"}
+# Since MCP tools are nested functions, we need to create a mock MCP server and register tools
+from fastmcp import FastMCP
+from league_analysis_mcp_server.tools import register_tools
 from league_analysis_mcp_server.server import app_state
+from league_analysis_mcp_server.cache import CacheManager
+from league_analysis_mcp_server.enhanced_auth import EnhancedYahooAuthManager
 
 
 class TestBasicTools(FunctionalTestCase):
     """Test basic MCP tools functionality."""
     
     def setUp(self):
-        """Set up test with app state."""
+        """Set up test with app state and MCP server."""
         super().setUp()
         # Mock app_state to use our test managers
         app_state["cache_manager"] = self.cache_manager
         app_state["auth_manager"] = self.auth_manager
+        app_state["config"] = {"supported_sports": ["nfl", "nba", "mlb", "nhl"]}
+        app_state["game_ids"] = {"nfl": {"2024": "414"}}
+        
+        # Create mock MCP server and register tools
+        self.mcp = FastMCP("test", "1.0.0")
+        register_tools(self.mcp, app_state)
     
     def test_get_league_info_returns_valid_data(self):
         """Test get_league_info returns properly formatted league data."""
@@ -54,18 +49,19 @@ class TestBasicTools(FunctionalTestCase):
             "data": fixture_data["league_info"]
         })
         
-        # Call the function
-        result = get_league_info("123456", "nfl")
+        # Call the function via MCP tool
+        tool = self.mcp.get_tool('get_league_info')
+        result = tool.fn(league_id="123456", sport="nfl")
         
         # Assertions
         self.assertIn("league", result)
         league_data = result["league"]
         
         # Validate required fields
-        self.assertEqual(league_data["league_id"], "123456")
-        self.assertEqual(league_data["name"], "Test Fantasy Football League")
-        self.assertEqual(league_data["num_teams"], 10)
-        self.assertEqual(league_data["current_week"], 8)
+        self.assertEqual(league_data.get("league_id"), "123456")
+        self.assertEqual(league_data.get("name"), "Test Fantasy Football League")
+        self.assertEqual(league_data.get("num_teams"), 10)
+        self.assertEqual(league_data.get("current_week"), 8)
         self.assertIn("settings", result)
         
         # Validate settings structure
@@ -88,10 +84,11 @@ class TestBasicTools(FunctionalTestCase):
             "data": historical_data
         })
         
-        result = get_league_info("123456", "nfl", "2023")
+        tool = self.mcp.get_tool('get_league_info')
+        result = tool.fn(league_id="123456", sport="nfl", season="2023")
         
         # Should return historical data
-        self.assertEqual(result["league"]["season"], "2023")
+        self.assertEqual(result["league"].get("season"), "2023")
         
         # Should cache in historical cache
         self.assert_cache_contains("nfl", "123456", "league_info", "2023")
@@ -104,7 +101,8 @@ class TestBasicTools(FunctionalTestCase):
             "data": fixture_data["standings"]
         })
         
-        result = get_standings("123456", "nfl")
+        tool = self.mcp.get_tool('get_standings')
+        result = tool.fn(league_id="123456", sport="nfl")
         
         # Validate response structure
         self.assertIn("teams", result)
@@ -122,14 +120,14 @@ class TestBasicTools(FunctionalTestCase):
             self.assertIn(field, team)
         
         # Validate standings data
-        standings = team["team_standings"]
+        standings = team.get("team_standings", {})
         self.assertIn("rank", standings)
         self.assertIn("outcome_totals", standings)
         self.assertIn("points_for", standings)
         self.assertIn("points_against", standings)
         
         # Validate wins/losses format
-        outcome = standings["outcome_totals"]
+        outcome = standings.get("outcome_totals", {})
         self.assertIn("wins", outcome)
         self.assertIn("losses", outcome)
         self.assertIn("percentage", outcome)
@@ -142,15 +140,16 @@ class TestBasicTools(FunctionalTestCase):
             "data": fixture_data["team_roster"]
         })
         
-        result = get_team_roster("123456", "1", "nfl")
+        tool = self.mcp.get_tool('get_team_roster')
+        result = tool.fn(league_id="123456", team_id="1", sport="nfl")
         
         # Validate response structure
         self.assertIn("team", result)
         self.assertIn("roster", result)
         
         team = result["team"]
-        self.assertEqual(team["team_id"], "1")
-        self.assertEqual(team["name"], "Team Alpha")
+        self.assertEqual(team.get("team_id"), "1")
+        self.assertEqual(team.get("name"), "Team Alpha")
         
         roster = result["roster"]
         self.assertIn("players", roster)
@@ -199,13 +198,14 @@ class TestBasicTools(FunctionalTestCase):
     def test_tools_validate_parameters(self):
         """Test that tools properly validate input parameters."""
         # Test with invalid sport
-        result = get_league_info("123456", "invalid_sport")
+        tool = self.mcp.get_tool('get_league_info')
+        result = tool.fn(league_id="123456", sport="invalid_sport")
         
         # Should handle invalid sport gracefully
         self.assertIn("error", result)
         
         # Test with empty league_id
-        result = get_league_info("", "nfl")
+        result = tool.fn(league_id="", sport="nfl")
         
         # Should handle empty league_id
         self.assertIn("error", result)
@@ -219,11 +219,12 @@ class TestBasicTools(FunctionalTestCase):
         })
         
         # First call should hit API
-        result1 = get_league_info("123456", "nfl")
+        tool = self.mcp.get_tool('get_league_info')
+        result1 = tool.fn(league_id="123456", sport="nfl")
         self.assertEqual(self.mock_yahoo_query.call_count, 1)
         
         # Second call should use cache
-        result2 = get_league_info("123456", "nfl")
+        result2 = tool.fn(league_id="123456", sport="nfl")
         self.assertEqual(self.mock_yahoo_query.call_count, 1)  # No additional calls
         
         # Results should be identical
@@ -240,6 +241,12 @@ class TestMatchupTools(FunctionalTestCase):
         super().setUp()
         app_state["cache_manager"] = self.cache_manager
         app_state["auth_manager"] = self.auth_manager
+        app_state["config"] = {"supported_sports": ["nfl", "nba", "mlb", "nhl"]}
+        app_state["game_ids"] = {"nfl": {"2024": "414"}}
+        
+        # Create mock MCP server and register tools
+        self.mcp = FastMCP("test", "1.0.0")
+        register_tools(self.mcp, app_state)
     
     def test_get_matchups_returns_valid_data(self):
         """Test get_matchups returns proper matchup data."""
@@ -293,7 +300,8 @@ class TestMatchupTools(FunctionalTestCase):
             "data": matchup_data
         })
         
-        result = get_matchups("123456", "nfl", week="8")
+        tool = self.mcp.get_tool('get_matchups')
+        result = tool.fn(league_id="123456", sport="nfl", week=8)
         
         # Validate structure
         self.assertIn("scoreboard", result)
@@ -301,17 +309,17 @@ class TestMatchupTools(FunctionalTestCase):
         
         self.assertIn("week", scoreboard)
         self.assertIn("matchups", scoreboard)
-        self.assertEqual(scoreboard["week"], "8")
+        self.assertEqual(scoreboard.get("week"), "8")
         
         # Validate matchup data
-        matchups = scoreboard["matchups"]
+        matchups = scoreboard.get("matchups", [])
         self.assertIsInstance(matchups, list)
         self.assertGreater(len(matchups), 0)
         
         matchup = matchups[0]
         self.assertIn("teams", matchup)
         
-        teams = matchup["teams"]
+        teams = matchup.get("teams", [])
         self.assertEqual(len(teams), 2)  # Should be head-to-head
         
         # Validate team matchup data
@@ -346,11 +354,12 @@ class TestMatchupTools(FunctionalTestCase):
                 {"success": True, "data": matchup_data}   # Matchup call
             ]
             
-            result = get_matchups("123456", "nfl")
+            tool = self.mcp.get_tool('get_matchups')
+            result = tool.fn(league_id="123456", sport="nfl")
             
             # Should use current week from league
             self.assertIn("scoreboard", result)
-            self.assertEqual(result["scoreboard"]["week"], "8")
+            self.assertEqual(result["scoreboard"].get("week"), "8")
 
 
 class TestToolsIntegration(FunctionalTestCase):
@@ -360,6 +369,12 @@ class TestToolsIntegration(FunctionalTestCase):
         super().setUp()
         app_state["cache_manager"] = self.cache_manager
         app_state["auth_manager"] = self.auth_manager
+        app_state["config"] = {"supported_sports": ["nfl", "nba", "mlb", "nhl"]}
+        app_state["game_ids"] = {"nfl": {"2024": "414"}}
+        
+        # Create mock MCP server and register tools
+        self.mcp = FastMCP("test", "1.0.0")
+        register_tools(self.mcp, app_state)
     
     def test_complete_league_overview_workflow(self):
         """Test getting complete league overview using multiple tools."""
@@ -386,14 +401,18 @@ class TestToolsIntegration(FunctionalTestCase):
             ]
             
             # Get league overview
-            league_info = get_league_info("123456", "nfl")
-            standings = get_standings("123456", "nfl")
-            matchups = get_matchups("123456", "nfl")
+            league_tool = self.mcp.get_tool('get_league_info')
+            standings_tool = self.mcp.get_tool('get_standings')
+            matchups_tool = self.mcp.get_tool('get_matchups')
+            
+            league_info = league_tool.fn(league_id="123456", sport="nfl")
+            standings = standings_tool.fn(league_id="123456", sport="nfl")
+            matchups = matchups_tool.fn(league_id="123456", sport="nfl")
             
             # Validate we got coherent data
-            self.assertEqual(league_info["league"]["league_id"], "123456")
-            self.assertEqual(standings["teams"][0]["team_id"], "1")
-            self.assertEqual(matchups["scoreboard"]["week"], "8")
+            self.assertEqual(league_info["league"].get("league_id"), "123456")
+            self.assertEqual(standings["teams"][0].get("team_id"), "1")
+            self.assertEqual(matchups["scoreboard"].get("week"), "8")
             
             # All data should be cached
             self.assert_cache_contains("nfl", "123456", "league_info")
@@ -413,11 +432,12 @@ class TestToolsIntegration(FunctionalTestCase):
                 "data": league_data
             })
             
-            result = get_league_info("123456", sport)
+            tool = self.mcp.get_tool('get_league_info')
+            result = tool.fn(league_id="123456", sport=sport)
             
             # Should work for all sports
             self.assertIn("league", result)
-            self.assertEqual(result["league"]["game_code"], sport)
+            self.assertEqual(result["league"].get("game_code"), sport)
             
             # Each sport should cache separately
             self.assert_cache_contains(sport, "123456", "league_info")
@@ -449,7 +469,8 @@ class TestToolsIntegration(FunctionalTestCase):
                  'yahoo_consumer_secret': 'test_secret'
              }):
             
-            result2 = tool.fn(league_id="123456", sport="nfl")
+            tool2 = self.mcp.get_tool('get_league_info')
+            result2 = tool2.fn(league_id="123456", sport="nfl")
         
             # Should handle error gracefully
             # (This depends on implementation details - might need adjustment)
