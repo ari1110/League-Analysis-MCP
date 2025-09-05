@@ -20,6 +20,7 @@ author: Claude Code PM System
   - Colocated with Git for seamless integration
   - Enables true parallel agent execution through isolated working copies
   - Superior conflict resolution for parallel fixes
+  - Working copies as commits - enables parallel development without merge conflicts
 
 ### Key Framework Dependencies
 
@@ -79,9 +80,10 @@ author: Claude Code PM System
 - **pytest-asyncio 0.21.0+** - AsyncIO testing support
 
 #### Parallel Development Tools
-- **Multiple Task Tool Calls** - Simultaneous agent execution
-- **Jujutsu Working Copies** - Isolated parallel development environments
+- **Multiple Task Tool Calls** - Simultaneous agent execution for true parallelism
+- **Jujutsu Working Copies** - Isolated parallel development environments via `jj new` 
 - **repo-issue-fixer agent** - Automated code quality and type error resolution
+- **Testable Architecture Pattern** - Private `_impl` functions + public API + MCP wrappers
 
 ## Architecture Technologies
 

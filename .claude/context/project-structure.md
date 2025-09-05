@@ -36,6 +36,7 @@ src/league_analysis_mcp_server/
 ├── oauth_callback_server.py # HTTPS callback server for automated OAuth
 ├── cache.py                # Caching layer with TTL and size management
 ├── tools.py                # Basic MCP tools (league info, standings, rosters)
+├── tools_impl.py           # Implementation functions for MCP tools (testable architecture)
 ├── historical.py           # Historical analysis tools (multi-season data)
 ├── analytics.py            # Advanced analytics (manager profiling, predictions)
 ├── resources.py            # MCP resources (read-only data access)

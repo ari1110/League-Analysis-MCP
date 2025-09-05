@@ -11,10 +11,22 @@ from pathlib import Path
 from typing import Dict, Any, Optional
 from unittest.mock import patch
 
-# Add src to path
-sys.path.insert(0, str(Path(__file__).parent.parent.parent / "src"))
+# Add src and tests to path
+src_path = Path(__file__).parent.parent.parent / "src"
+tests_path = Path(__file__).parent.parent
+sys.path.insert(0, str(src_path))
+sys.path.insert(0, str(tests_path))
 
-from .base import FunctionalTestCase, TestFixtures
+# Direct import from functional directory to avoid conflicts
+sys.path.insert(0, str(Path(__file__).parent))
+from base import FunctionalTestCase, TestFixtures
+from league_analysis_mcp_server.tools_impl import (
+    get_league_info_impl,
+    get_standings_impl, 
+    get_team_roster_impl,
+    get_matchups_impl
+)
+from league_analysis_mcp_server.server import app_state
 
 
 class ToolTestMixin:
@@ -211,29 +223,23 @@ class ToolTestMixin:
         except Exception as e:
             return {"error": str(e)}
 
-# Import the modules containing MCP tools implementation functions
-# We need to create implementation functions that can be tested directly
-from league_analysis_mcp_server.server import app_state
-from league_analysis_mcp_server.cache import CacheManager
-from league_analysis_mcp_server.enhanced_auth import EnhancedYahooAuthManager
-from yfpy import YahooFantasySportsQuery
-from league_analysis_mcp_server.enhancement_helpers import DataEnhancer
+# Implementation functions imported from tools_impl module at top of file
 
 
-class TestBasicTools(FunctionalTestCase, ToolTestMixin):
+class TestBasicTools(FunctionalTestCase):
     """Test basic MCP tools functionality."""
     
     def setUp(self):
         """Set up test with app state and implementation functions."""
         super().setUp()
+        # Import here to avoid circular imports
         # Mock app_state to use our test managers
         app_state["cache_manager"] = self.cache_manager
         app_state["auth_manager"] = self.auth_manager
         app_state["config"] = {"supported_sports": ["nfl", "nba", "mlb", "nhl"]}
         app_state["game_ids"] = {"nfl": {"2024": "414"}}
         
-        # Create implementation functions for testing
-        self._setup_tool_implementations()
+        # Implementation functions imported from tools_impl module
     
     def test_get_league_info_returns_valid_data(self):
         """Test get_league_info returns properly formatted league data."""
@@ -245,7 +251,7 @@ class TestBasicTools(FunctionalTestCase, ToolTestMixin):
         })
         
         # Call the implementation function
-        result = self._get_league_info_impl("123456", "nfl")
+        result = get_league_info_impl("123456", "nfl", None, app_state)
         
         # Assertions
         self.assertIn("league", result)
@@ -278,7 +284,7 @@ class TestBasicTools(FunctionalTestCase, ToolTestMixin):
             "data": historical_data
         })
         
-        result = self._get_league_info_impl("123456", "nfl", "2023")
+        result = get_league_info_impl("123456", "nfl", "2023", app_state)
         
         # Should return historical data
         self.assertEqual(result["league"].get("season"), "2023")
@@ -294,7 +300,7 @@ class TestBasicTools(FunctionalTestCase, ToolTestMixin):
             "data": fixture_data["standings"]
         })
         
-        result = self._get_standings_impl("123456", "nfl")
+        result = get_standings_impl("123456", "nfl", None, app_state)
         
         # Validate response structure
         self.assertIn("teams", result)
@@ -332,7 +338,7 @@ class TestBasicTools(FunctionalTestCase, ToolTestMixin):
             "data": fixture_data["team_roster"]
         })
         
-        result = self._get_team_roster_impl("123456", "1", "nfl")
+        result = get_team_roster_impl("123456", "1", "nfl", None, app_state)
         
         # Validate response structure
         self.assertIn("team", result)
@@ -376,8 +382,7 @@ class TestBasicTools(FunctionalTestCase, ToolTestMixin):
                  'yahoo_consumer_key': 'test_key',
                  'yahoo_consumer_secret': 'test_secret'
              }):
-            
-            result = self._get_league_info_impl("123456", "nfl")
+            result = get_league_info_impl("123456", "nfl", None, app_state)
             
             # Should not crash or return malformed data
             self.assertIsInstance(result, dict)
@@ -388,13 +393,13 @@ class TestBasicTools(FunctionalTestCase, ToolTestMixin):
     def test_tools_validate_parameters(self):
         """Test that tools properly validate input parameters."""
         # Test with invalid sport
-        result = self._get_league_info_impl("123456", "invalid_sport")
+        result = get_league_info_impl("123456", "invalid_sport", None, app_state)
         
         # Should handle invalid sport gracefully
         self.assertIn("error", result)
         
         # Test with empty league_id
-        result = self._get_league_info_impl("", "nfl")
+        result = get_league_info_impl("", "nfl", None, app_state)
         
         # Should handle empty league_id
         self.assertIn("error", result)
@@ -408,11 +413,11 @@ class TestBasicTools(FunctionalTestCase, ToolTestMixin):
         })
         
         # First call should hit API
-        result1 = self._get_league_info_impl("123456", "nfl")
+        result1 = get_league_info_impl("123456", "nfl", None, app_state)
         self.assertEqual(self.mock_yahoo_query.call_count, 1)
         
         # Second call should use cache
-        result2 = self._get_league_info_impl("123456", "nfl")
+        result2 = get_league_info_impl("123456", "nfl", None, app_state)
         self.assertEqual(self.mock_yahoo_query.call_count, 1)  # No additional calls
         
         # Results should be identical
@@ -422,18 +427,18 @@ class TestBasicTools(FunctionalTestCase, ToolTestMixin):
         self.assert_cache_contains("nfl", "123456", "league_info")
 
 
-class TestMatchupTools(FunctionalTestCase, ToolTestMixin):
+class TestMatchupTools(FunctionalTestCase):
     """Test matchup-related tools."""
     
     def setUp(self):
         super().setUp()
+        # Import here to avoid circular imports
         app_state["cache_manager"] = self.cache_manager
         app_state["auth_manager"] = self.auth_manager
         app_state["config"] = {"supported_sports": ["nfl", "nba", "mlb", "nhl"]}
         app_state["game_ids"] = {"nfl": {"2024": "414"}}
         
-        # Set up the test implementations from parent class
-        self._setup_tool_implementations()
+        # Implementation functions imported from tools_impl module
     
     def test_get_matchups_returns_valid_data(self):
         """Test get_matchups returns proper matchup data."""
@@ -487,7 +492,7 @@ class TestMatchupTools(FunctionalTestCase, ToolTestMixin):
             "data": matchup_data
         })
         
-        result = self._get_matchups_impl("123456", "nfl", 8)
+        result = get_matchups_impl("123456", "nfl", 8, None, app_state)
         
         # Validate structure
         self.assertIn("scoreboard", result)
@@ -540,25 +545,25 @@ class TestMatchupTools(FunctionalTestCase, ToolTestMixin):
                 {"success": True, "data": matchup_data}   # Matchup call
             ]
             
-            result = self._get_matchups_impl("123456", "nfl")
+            result = get_matchups_impl("123456", "nfl", None, None, app_state)
             
             # Should use current week from league
             self.assertIn("scoreboard", result)
             self.assertEqual(result["scoreboard"].get("week"), "8")
 
 
-class TestToolsIntegration(FunctionalTestCase, ToolTestMixin):
+class TestToolsIntegration(FunctionalTestCase):
     """Test tools working together in realistic scenarios."""
     
     def setUp(self):
         super().setUp()
+        # Import here to avoid circular imports
         app_state["cache_manager"] = self.cache_manager
         app_state["auth_manager"] = self.auth_manager
         app_state["config"] = {"supported_sports": ["nfl", "nba", "mlb", "nhl"]}
         app_state["game_ids"] = {"nfl": {"2024": "414"}}
         
-        # Set up the test implementations from parent class
-        self._setup_tool_implementations()
+        # Implementation functions imported from tools_impl module
     
     def test_complete_league_overview_workflow(self):
         """Test getting complete league overview using multiple tools."""
@@ -585,9 +590,9 @@ class TestToolsIntegration(FunctionalTestCase, ToolTestMixin):
             ]
             
             # Get league overview
-            league_info = self._get_league_info_impl("123456", "nfl")
-            standings = self._get_standings_impl("123456", "nfl")
-            matchups = self._get_matchups_impl("123456", "nfl")
+            league_info = get_league_info_impl("123456", "nfl", None, app_state)
+            standings = get_standings_impl("123456", "nfl", None, app_state)
+            matchups = get_matchups_impl("123456", "nfl", None, None, app_state)
             
             # Validate we got coherent data
             self.assertEqual(league_info["league"].get("league_id"), "123456")
@@ -612,7 +617,7 @@ class TestToolsIntegration(FunctionalTestCase, ToolTestMixin):
                 "data": league_data
             })
             
-            result = self._get_league_info_impl("123456", sport)
+            result = get_league_info_impl("123456", sport, None, app_state)
             
             # Should work for all sports
             self.assertIn("league", result)
@@ -636,7 +641,7 @@ class TestToolsIntegration(FunctionalTestCase, ToolTestMixin):
                  'yahoo_consumer_secret': 'test_secret'
              }):
             
-            result1 = self._get_league_info_impl("123456", "nfl")
+                result1 = get_league_info_impl("123456", "nfl", None, app_state)
         
         # Now simulate API failure and test again
         self.set_yahoo_mock_error("Network timeout")
@@ -647,7 +652,7 @@ class TestToolsIntegration(FunctionalTestCase, ToolTestMixin):
                  'yahoo_consumer_secret': 'test_secret'
              }):
             
-            result2 = self._get_league_info_impl("123456", "nfl")
+            result2 = get_league_info_impl("123456", "nfl", None, app_state)
         
             # Should handle error gracefully
             # (This depends on implementation details - might need adjustment)

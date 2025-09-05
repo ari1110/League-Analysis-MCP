@@ -31,7 +31,8 @@ author: Claude Code PM System
 
 ### 3. Tool Categorization Pattern
 **Domain-Specific Tool Modules**:
-- `tools.py` - Basic league operations
+- `tools.py` - Basic league operations (MCP tool wrappers)
+- `tools_impl.py` - Implementation functions for testable architecture
 - `historical.py` - Multi-season analysis
 - `analytics.py` - Advanced pattern recognition
 - `game_tools.py` - Game and season management
@@ -39,6 +40,11 @@ author: Claude Code PM System
 - `player_tools.py` - Player statistics and ownership
 - `user_tools.py` - User account access
 - `utility_tools.py` - Maintenance and troubleshooting
+
+**Testable Architecture Pattern**:
+- **Private Implementation Functions**: `_impl` suffix for business logic
+- **Public API Functions**: Clean interfaces for external consumption
+- **MCP Tool Wrappers**: Minimal decorators that delegate to implementation
 
 ### 4. Resource Pattern for Read-Only Data
 **URI-Based Resource Access**:

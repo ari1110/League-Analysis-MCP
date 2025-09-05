@@ -1003,7 +1003,6 @@ from .tools_impl import (
     get_team_roster_impl,
     get_matchups_impl
 )
-from .server import app_state
 
 
 def get_league_info(league_id: str, sport: str = "nfl", season: Optional[str] = None) -> Dict[str, Any]:
@@ -1018,6 +1017,8 @@ def get_league_info(league_id: str, sport: str = "nfl", season: Optional[str] = 
     Returns:
         League information and settings
     """
+    # Import here to avoid circular imports
+    from .server import app_state
     return get_league_info_impl(league_id, sport, season, app_state)
 
 
@@ -1033,6 +1034,8 @@ def get_standings(league_id: str, sport: str = "nfl", season: Optional[str] = No
     Returns:
         League standings information
     """
+    # Import here to avoid circular imports
+    from .server import app_state
     return get_standings_impl(league_id, sport, season, app_state)
 
 
@@ -1049,6 +1052,8 @@ def get_team_roster(league_id: str, team_id: str, sport: str = "nfl", season: Op
     Returns:
         Team roster information
     """
+    # Import here to avoid circular imports
+    from .server import app_state
     return get_team_roster_impl(league_id, team_id, sport, season, app_state)
 
 
@@ -1065,4 +1070,6 @@ def get_matchups(league_id: str, sport: str = "nfl", week: Optional[int] = None,
     Returns:
         Matchup information for the specified week
     """
+    # Import here to avoid circular imports
+    from .server import app_state
     return get_matchups_impl(league_id, sport, week, season, app_state)

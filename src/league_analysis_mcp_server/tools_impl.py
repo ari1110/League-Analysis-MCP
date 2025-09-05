@@ -10,7 +10,7 @@ import logging
 from typing import Dict, Any, Optional, Union, List
 from yfpy import YahooFantasySportsQuery
 
-from .data_enhancer import DataEnhancer
+from .enhancement_helpers import DataEnhancer
 
 logger = logging.getLogger(__name__)
 
