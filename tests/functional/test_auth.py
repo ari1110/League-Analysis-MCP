@@ -129,7 +129,7 @@ class TestAuthenticationWorkflows(FunctionalTestCase):
             mock_oauth.return_value = mock_session
             
             # Simulate token exchange
-            success = auth_manager.exchange_code_for_token(
+            success = auth_manager.exchange_code_for_tokens(
                 "test_auth_code", 
                 "test_state"
             )
@@ -277,7 +277,7 @@ class TestAuthenticationErrorScenarios(FunctionalTestCase):
             mock_session.fetch_token.side_effect = Exception("Invalid client credentials")
             mock_oauth.return_value = mock_session
             
-            success = auth_manager.exchange_code_for_token("auth_code", "state")
+            success = auth_manager.exchange_code_for_tokens("auth_code", "state")
             
             self.assertFalse(success)
         
@@ -294,7 +294,7 @@ class TestAuthenticationErrorScenarios(FunctionalTestCase):
             mock_session.fetch_token.side_effect = Exception("Network timeout")
             mock_oauth.return_value = mock_session
             
-            success = auth_manager.exchange_code_for_token("auth_code", "state")
+            success = auth_manager.exchange_code_for_tokens("auth_code", "state")
             
             self.assertFalse(success)
             
@@ -318,7 +318,7 @@ class TestAuthenticationErrorScenarios(FunctionalTestCase):
                 mock_session.fetch_token.side_effect = ValueError("Invalid authorization code")
                 mock_oauth.return_value = mock_session
                 
-                success = auth_manager.exchange_code_for_token(code, "state")
+                success = auth_manager.exchange_code_for_tokens(code, "state")
                 
                 self.assertFalse(success, f"Should reject malformed code: {code}")
     

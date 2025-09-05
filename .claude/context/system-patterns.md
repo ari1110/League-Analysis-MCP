@@ -1,7 +1,7 @@
 ---
 created: 2025-09-04T19:09:18Z
-last_updated: 2025-09-04T20:18:05Z
-version: 1.1
+last_updated: 2025-09-04T23:12:23Z
+version: 1.2
 author: Claude Code PM System
 ---
 
@@ -299,11 +299,27 @@ async def analyze_historical_drafts(league_id, seasons):
 - `test_mcp_connection.py` - MCP protocol communication
 - `test_comprehensive.py` - Static analysis and comprehensive coverage
 
-### 3. Static Analysis Integration Pattern
+### 3. Comprehensive Functional Testing Pattern (v0.3.0+)
+**User Scenario Validation**:
+- **FunctionalTestCase**: Base class with Yahoo API mocking and response fixtures
+- **IntegrationTestCase**: Real Yahoo API testing with credential validation
+- **Test Fixtures**: Realistic Yahoo API response data in JSON format
+- **End-to-End Workflows**: Complete user journey validation from authentication to analytics
+- **Error Scenario Coverage**: Comprehensive edge case and error condition testing
+
+**Functional Test Architecture**:
+- `test_analytics.py` - Analytics accuracy and pattern recognition validation
+- `test_auth.py` - Authentication workflow and OAuth flow testing  
+- `test_cache.py` - Cache behavior, TTL management, and data persistence
+- `test_errors.py` - Error handling, edge cases, and resilience testing
+- `test_tools.py` - MCP tool functionality and parameter validation
+- `test_workflows.py` - End-to-end user workflow and integration testing
+
+### 4. Static Analysis Integration Pattern
 **Quality Assurance Automation**:
 - **Ruff Integration**: Automated code quality and linting checks
 - **MyPy Integration**: Static type checking with error reporting
 - **IDE Diagnostics**: Real-time analysis via MCP getDiagnostics tool
 - **Comprehensive Coverage**: Function-level testing and error handling validation
 - **Windows Compatibility**: Unicode-safe output for cross-platform support
-- `test_type_fixes.py` - Type safety and validation
+- `test_comprehensive.py` - Static analysis and comprehensive coverage

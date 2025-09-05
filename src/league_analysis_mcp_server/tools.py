@@ -451,7 +451,9 @@ def register_tools(mcp: FastMCP, app_state: Dict[str, Any]) -> None:
             if draft_results:
                 # Use DataEnhancer for consistent, readable results
                 data_enhancer = DataEnhancer(yahoo_query, cache_manager)
-                picks_data = data_enhancer.enhance_data_batch(draft_results, 'draft_pick')
+                # Convert Data object to list for enhance_data_batch
+                draft_list = list(draft_results) if draft_results else []
+                picks_data = data_enhancer.enhance_data_batch(draft_list, 'draft_pick')
 
             result = {
                 "league_id": league_id,

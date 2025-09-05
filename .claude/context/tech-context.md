@@ -1,7 +1,7 @@
 ---
 created: 2025-09-04T19:09:18Z
-last_updated: 2025-09-04T20:18:05Z
-version: 1.1
+last_updated: 2025-09-04T23:12:23Z
+version: 1.2
 author: Claude Code PM System
 ---
 
@@ -116,15 +116,24 @@ author: Claude Code PM System
 
 ### CI/CD & Testing Technology
 - **GitHub Actions** - Automated testing and publishing
-- **Automated Publishing** - Tag-based release to PyPI
+- **Automated Publishing** - Tag-based release to PyPI (v0.3.0+ published successfully)
 - **Version Management** - Synchronized between pyproject.toml and config files
 - **Testing Matrix** - Python 3.10, 3.11, 3.12 compatibility
+
+#### Comprehensive Testing Framework (v0.3.0+)
+- **Functional Testing Suite** - 6 test files validating real user scenarios and workflows
+- **Base Test Classes** - `FunctionalTestCase` and `IntegrationTestCase` with Yahoo API mocking
+- **Test Fixtures** - Realistic Yahoo API response data in JSON format for consistent testing
+- **Integration Testing** - Real Yahoo API testing with credential validation (`test_live_data.py`)
+- **Test Runner** - `run_functional_tests.py` with environment checking and detailed reporting
+- **Error Scenario Testing** - Comprehensive edge case and error condition validation
 
 #### Static Analysis Integration
 - **Ruff** - Python linting and code quality analysis
 - **MyPy** - Static type checking with --ignore-missing-imports
 - **Pylance** - IDE-based diagnostics via mcp__ide__getDiagnostics tool
 - **Comprehensive Test Suite** - `tests/test_comprehensive.py` integrating all analysis tools
+- **Windows Compatibility** - Unicode-safe testing output for cross-platform development
 
 ## Platform Support
 
