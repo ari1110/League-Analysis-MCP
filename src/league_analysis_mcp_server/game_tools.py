@@ -7,6 +7,7 @@ from typing import Dict, Any, Optional
 
 from yfpy import YahooFantasySportsQuery
 from fastmcp import FastMCP
+from .shared_utils import get_yahoo_query, handle_api_error
 
 logger = logging.getLogger(__name__)
 
@@ -14,25 +15,6 @@ logger = logging.getLogger(__name__)
 def register_game_tools(mcp: FastMCP, app_state: Dict[str, Any]):
     """Register all MCP game tools."""
 
-    def get_yahoo_query(league_id: str, game_id: Optional[str] = None, sport: str = "nfl") -> YahooFantasySportsQuery:
-        """Create a Yahoo Fantasy Sports Query object."""
-        auth_manager = app_state["auth_manager"]
-
-        if not auth_manager.is_configured():
-            raise ValueError("Yahoo authentication not configured. Run check_setup_status() to begin setup.")
-
-        auth_credentials = auth_manager.get_auth_credentials()
-
-        # Use game_id if provided, otherwise use current season
-        if game_id:
-            query_params = {**auth_credentials, 'game_id': game_id}
-        else:
-            query_params = {**auth_credentials, 'game_code': sport}
-
-        return YahooFantasySportsQuery(
-            league_id=league_id,
-            **query_params
-        )
 
     @mcp.tool()
     def get_game_info_by_game_id(game_id: str, sport: str = "nfl") -> Dict[str, Any]:
@@ -55,7 +37,7 @@ def register_game_tools(mcp: FastMCP, app_state: Dict[str, Any]):
             if cached_data:
                 return cached_data
 
-            yahoo_query = get_yahoo_query("temp", game_id, sport)  # League ID not needed for game info
+            yahoo_query = get_yahoo_query("temp", app_state, game_id, sport)  # League ID not needed for game info
             game_info = yahoo_query.get_game_info_by_game_id(int(game_id))
 
             result = {
@@ -111,7 +93,7 @@ def register_game_tools(mcp: FastMCP, app_state: Dict[str, Any]):
             if cached_data:
                 return cached_data
 
-            yahoo_query = get_yahoo_query("temp", None, sport)
+            yahoo_query = get_yahoo_query("temp", app_state, None, sport)
             game_key = yahoo_query.get_game_key_by_season(int(season))
 
             result = {
@@ -150,7 +132,7 @@ def register_game_tools(mcp: FastMCP, app_state: Dict[str, Any]):
             if cached_data:
                 return cached_data
 
-            yahoo_query = get_yahoo_query("temp", game_id, sport)
+            yahoo_query = get_yahoo_query("temp", app_state, game_id, sport)
             metadata = yahoo_query.get_game_metadata_by_game_id(int(game_id))
 
             result = {
@@ -197,7 +179,7 @@ def register_game_tools(mcp: FastMCP, app_state: Dict[str, Any]):
             if cached_data:
                 return cached_data
 
-            yahoo_query = get_yahoo_query("temp", game_id, sport)
+            yahoo_query = get_yahoo_query("temp", app_state, game_id, sport)
             position_types = yahoo_query.get_game_position_types_by_game_id(int(game_id))
 
             positions_data = []
@@ -247,7 +229,7 @@ def register_game_tools(mcp: FastMCP, app_state: Dict[str, Any]):
             if cached_data:
                 return cached_data
 
-            yahoo_query = get_yahoo_query("temp", game_id, sport)
+            yahoo_query = get_yahoo_query("temp", app_state, game_id, sport)
             roster_positions = yahoo_query.get_game_roster_positions_by_game_id(int(game_id))
 
             positions_data = []
@@ -298,7 +280,7 @@ def register_game_tools(mcp: FastMCP, app_state: Dict[str, Any]):
             if cached_data:
                 return cached_data
 
-            yahoo_query = get_yahoo_query("temp", game_id, sport)
+            yahoo_query = get_yahoo_query("temp", app_state, game_id, sport)
             stat_categories = yahoo_query.get_game_stat_categories_by_game_id(int(game_id))
 
             stats_data = []
@@ -352,7 +334,7 @@ def register_game_tools(mcp: FastMCP, app_state: Dict[str, Any]):
             if cached_data:
                 return cached_data
 
-            yahoo_query = get_yahoo_query("temp", game_id, sport)
+            yahoo_query = get_yahoo_query("temp", app_state, game_id, sport)
             game_weeks = yahoo_query.get_game_weeks_by_game_id(int(game_id))
 
             weeks_data = []

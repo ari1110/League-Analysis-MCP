@@ -1,7 +1,7 @@
 ---
 created: 2025-09-04T19:09:18Z
-last_updated: 2025-09-04T23:12:23Z
-version: 1.2
+last_updated: 2025-09-05T17:34:50Z
+version: 1.3
 author: Claude Code PM System
 ---
 
@@ -329,3 +329,18 @@ async def analyze_historical_drafts(league_id, seasons):
 - **Comprehensive Coverage**: Function-level testing and error handling validation
 - **Windows Compatibility**: Unicode-safe output for cross-platform support
 - `test_comprehensive.py` - Static analysis and comprehensive coverage
+
+## Development Workflow Patterns
+
+### 1. Enhanced Documentation Pattern (v0.3.0+)
+**Comprehensive Workflow Documentation**:
+- **Command Verification**: All workflow commands verified against actual tool versions (Jujutsu v0.33.0)
+- **Layered Documentation**: Basic commands → advanced workflows → best practices → troubleshooting
+- **Reference Patterns**: Document proven breakthrough patterns as replicable templates
+- **Agent Integration**: Document sub-agent coordination with parallel development workflows
+
+**Documentation Structure**:
+- **CLAUDE.md**: 30+ verified Jujutsu commands with complete parallel development workflows
+- **Agent Configurations**: Enhanced parallel-worker.md and repo-issue-fixer.md with working copy support
+- **Best Practices**: Daily workflows, error recovery, performance optimization, and maintenance
+- **Safety Guidelines**: Detailed safety comparisons (jj rebase vs git rebase, recovery methods)

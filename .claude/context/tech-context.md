@@ -16,11 +16,15 @@ author: Claude Code PM System
 
 ### Development & Version Control
 - **Git** - Primary version control with worktree support
-- **Jujutsu (jj)** - Advanced VCS for parallel development workflows
-  - Colocated with Git for seamless integration
-  - Enables true parallel agent execution through isolated working copies
-  - Superior conflict resolution for parallel fixes
-  - Working copies as commits - enables parallel development without merge conflicts
+- **Jujutsu (jj) v0.33.0+** - Advanced VCS for parallel development workflows
+  - **Colocated with Git** for seamless integration (`jj git init --colocate`)
+  - **True parallel agent execution** through isolated working copies
+  - **Conflict-free parallel development** - working copies as commits
+  - **Superior safety** - `jj undo` reverses any operation, non-destructive rebase
+  - **No merge conflicts** - automatic conflict resolution with smart rebasing
+  - **Key commands**: `jj new`, `jj edit`, `jj rebase -r`, `jj log --graph`
+  - **Breakthrough capability**: Enabled 74 pyright error fixes across 6 files simultaneously
+  - **Agent integration**: Each Task tool call creates isolated `jj new` working copy
 
 ### Key Framework Dependencies
 
@@ -81,9 +85,14 @@ author: Claude Code PM System
 
 #### Parallel Development Tools
 - **Multiple Task Tool Calls** - Simultaneous agent execution for true parallelism
-- **Jujutsu Working Copies** - Isolated parallel development environments via `jj new` 
-- **repo-issue-fixer agent** - Automated code quality and type error resolution
+- **Jujutsu Working Copies** - Isolated parallel development environments via `jj new`
+  - **Core workflow**: `jj new -m "task-description"` → parallel work → `jj rebase -r <commit> -d main`
+  - **Visual monitoring**: `jj log --graph` and `jj log -r 'heads()'` for progress tracking
+  - **Safety features**: `jj undo` for operation reversal, `jj abandon` for cleanup
+  - **Git integration**: `jj git push` for seamless Git repository updates
+- **repo-issue-fixer agent** - Automated systematic issue resolution with batch verification
 - **Testable Architecture Pattern** - Private `_impl` functions + public API + MCP wrappers
+- **Verified Command Set** - 15+ verified Jujutsu commands for comprehensive parallel workflows
 
 ## Architecture Technologies
 

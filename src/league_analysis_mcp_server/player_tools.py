@@ -7,6 +7,7 @@ from typing import Dict, Any, Optional
 
 from yfpy import YahooFantasySportsQuery
 from fastmcp import FastMCP
+from .shared_utils import get_yahoo_query, handle_api_error
 from .enhancement_helpers import DataEnhancer, get_player_name
 
 logger = logging.getLogger(__name__)
@@ -15,25 +16,6 @@ logger = logging.getLogger(__name__)
 def register_player_tools(mcp: FastMCP, app_state: Dict[str, Any]):
     """Register all MCP player tools."""
 
-    def get_yahoo_query(league_id: str, game_id: Optional[str] = None, sport: str = "nfl") -> YahooFantasySportsQuery:
-        """Create a Yahoo Fantasy Sports Query object."""
-        auth_manager = app_state["auth_manager"]
-
-        if not auth_manager.is_configured():
-            raise ValueError("Yahoo authentication not configured. Run check_setup_status() to begin setup.")
-
-        auth_credentials = auth_manager.get_auth_credentials()
-
-        # Use game_id if provided, otherwise use current season
-        if game_id:
-            query_params = {**auth_credentials, 'game_id': game_id}
-        else:
-            query_params = {**auth_credentials, 'game_code': sport}
-
-        return YahooFantasySportsQuery(
-            league_id=league_id,
-            **query_params
-        )
 
     @mcp.tool()
     def get_player_draft_analysis(league_id: str, player_key: str, sport: str = "nfl",
@@ -66,7 +48,7 @@ def register_player_tools(mcp: FastMCP, app_state: Dict[str, Any]):
                 if not game_id:
                     return {"error": f"No game_id found for {sport} {season}"}
 
-            yahoo_query = get_yahoo_query(league_id, game_id, sport)
+            yahoo_query = get_yahoo_query(league_id, app_state, game_id, sport)
             draft_analysis = yahoo_query.get_player_draft_analysis(player_key)
 
             # Use DataEnhancer for consistent, readable draft analysis
@@ -130,7 +112,7 @@ def register_player_tools(mcp: FastMCP, app_state: Dict[str, Any]):
                 if not game_id:
                     return {"error": f"No game_id found for {sport} {season}"}
 
-            yahoo_query = get_yahoo_query(league_id, game_id, sport)
+            yahoo_query = get_yahoo_query(league_id, app_state, game_id, sport)
             ownership = yahoo_query.get_player_ownership(player_key)
 
             # Use DataEnhancer for consistent, readable ownership data
@@ -196,7 +178,7 @@ def register_player_tools(mcp: FastMCP, app_state: Dict[str, Any]):
                 if not game_id:
                     return {"error": f"No game_id found for {sport} {season}"}
 
-            yahoo_query = get_yahoo_query(league_id, game_id, sport)
+            yahoo_query = get_yahoo_query(league_id, app_state, game_id, sport)
             ownership = yahoo_query.get_player_percent_owned_by_week(player_key=player_key, chosen_week=week)
 
             result = {
@@ -256,7 +238,7 @@ def register_player_tools(mcp: FastMCP, app_state: Dict[str, Any]):
                 if not game_id:
                     return {"error": f"No game_id found for {sport} {season}"}
 
-            yahoo_query = get_yahoo_query(league_id, game_id, sport)
+            yahoo_query = get_yahoo_query(league_id, app_state, game_id, sport)
             stats = yahoo_query.get_player_stats_by_date(player_key=player_key, chosen_date=selected_date)
 
             result = {
@@ -315,7 +297,7 @@ def register_player_tools(mcp: FastMCP, app_state: Dict[str, Any]):
                 if not game_id:
                     return {"error": f"No game_id found for {sport} {season}"}
 
-            yahoo_query = get_yahoo_query(league_id, game_id, sport)
+            yahoo_query = get_yahoo_query(league_id, app_state, game_id, sport)
             stats = yahoo_query.get_player_stats_by_week(player_key=player_key, chosen_week=week)
 
             result = {
@@ -373,7 +355,7 @@ def register_player_tools(mcp: FastMCP, app_state: Dict[str, Any]):
                 if not game_id:
                     return {"error": f"No game_id found for {sport} {season}"}
 
-            yahoo_query = get_yahoo_query(league_id, game_id, sport)
+            yahoo_query = get_yahoo_query(league_id, app_state, game_id, sport)
             stats = yahoo_query.get_player_stats_for_season(player_key)
 
             # Use DataEnhancer for consistent, readable player stats

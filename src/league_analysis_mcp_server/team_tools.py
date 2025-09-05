@@ -7,6 +7,7 @@ from typing import Dict, Any, Optional
 
 from yfpy import YahooFantasySportsQuery
 from fastmcp import FastMCP
+from .shared_utils import get_yahoo_query, handle_api_error
 from .enhancement_helpers import get_player_name, DataEnhancer
 
 logger = logging.getLogger(__name__)
@@ -15,25 +16,6 @@ logger = logging.getLogger(__name__)
 def register_team_tools(mcp: FastMCP, app_state: Dict[str, Any]):
     """Register all MCP team tools."""
 
-    def get_yahoo_query(league_id: str, game_id: Optional[str] = None, sport: str = "nfl") -> YahooFantasySportsQuery:
-        """Create a Yahoo Fantasy Sports Query object."""
-        auth_manager = app_state["auth_manager"]
-
-        if not auth_manager.is_configured():
-            raise ValueError("Yahoo authentication not configured. Run check_setup_status() to begin setup.")
-
-        auth_credentials = auth_manager.get_auth_credentials()
-
-        # Use game_id if provided, otherwise use current season
-        if game_id:
-            query_params = {**auth_credentials, 'game_id': game_id}
-        else:
-            query_params = {**auth_credentials, 'game_code': sport}
-
-        return YahooFantasySportsQuery(
-            league_id=league_id,
-            **query_params
-        )
 
     @mcp.tool()
     def get_team_draft_results(league_id: str, team_id: str, sport: str = "nfl",
@@ -72,7 +54,7 @@ def register_team_tools(mcp: FastMCP, app_state: Dict[str, Any]):
                 if not game_id:
                     return {"error": f"No game_id found for {sport} {season}"}
 
-            yahoo_query = get_yahoo_query(league_id, game_id, sport)
+            yahoo_query = get_yahoo_query(league_id, app_state, game_id, sport)
             draft_results = yahoo_query.get_team_draft_results(team_id)
 
             picks_data = []
@@ -152,7 +134,7 @@ def register_team_tools(mcp: FastMCP, app_state: Dict[str, Any]):
                 if not game_id:
                     return {"error": f"No game_id found for {sport} {season}"}
 
-            yahoo_query = get_yahoo_query(league_id, game_id, sport)
+            yahoo_query = get_yahoo_query(league_id, app_state, game_id, sport)
             team = yahoo_query.get_team_info(team_id)
 
             result = {
@@ -243,7 +225,7 @@ def register_team_tools(mcp: FastMCP, app_state: Dict[str, Any]):
                 if not game_id:
                     return {"error": f"No game_id found for {sport} {season}"}
 
-            yahoo_query = get_yahoo_query(league_id, game_id, sport)
+            yahoo_query = get_yahoo_query(league_id, app_state, game_id, sport)
             matchups = yahoo_query.get_team_matchups(team_id)
 
             matchups_data = []
@@ -351,7 +333,7 @@ def register_team_tools(mcp: FastMCP, app_state: Dict[str, Any]):
                 if not game_id:
                     return {"error": f"No game_id found for {sport} {season}"}
 
-            yahoo_query = get_yahoo_query(league_id, game_id, sport)
+            yahoo_query = get_yahoo_query(league_id, app_state, game_id, sport)
             metadata = yahoo_query.get_team_metadata(team_id)
 
             result = {
@@ -426,7 +408,7 @@ def register_team_tools(mcp: FastMCP, app_state: Dict[str, Any]):
                 if not game_id:
                     return {"error": f"No game_id found for {sport} {season}"}
 
-            yahoo_query = get_yahoo_query(league_id, game_id, sport)
+            yahoo_query = get_yahoo_query(league_id, app_state, game_id, sport)
             roster = yahoo_query.get_team_roster_player_info_by_date(team_id=team_id, chosen_date=selected_date)
 
             players_data = []
@@ -514,7 +496,7 @@ def register_team_tools(mcp: FastMCP, app_state: Dict[str, Any]):
                 if not game_id:
                     return {"error": f"No game_id found for {sport} {season}"}
 
-            yahoo_query = get_yahoo_query(league_id, game_id, sport)
+            yahoo_query = get_yahoo_query(league_id, app_state, game_id, sport)
             roster = yahoo_query.get_team_roster_player_info_by_week(team_id=team_id, chosen_week=week)
 
             players_data = []
@@ -601,7 +583,7 @@ def register_team_tools(mcp: FastMCP, app_state: Dict[str, Any]):
                 if not game_id:
                     return {"error": f"No game_id found for {sport} {season}"}
 
-            yahoo_query = get_yahoo_query(league_id, game_id, sport)
+            yahoo_query = get_yahoo_query(league_id, app_state, game_id, sport)
             roster = yahoo_query.get_team_roster_player_stats(team_id)
 
             players_data = []
@@ -684,7 +666,7 @@ def register_team_tools(mcp: FastMCP, app_state: Dict[str, Any]):
                 if not game_id:
                     return {"error": f"No game_id found for {sport} {season}"}
 
-            yahoo_query = get_yahoo_query(league_id, game_id, sport)
+            yahoo_query = get_yahoo_query(league_id, app_state, game_id, sport)
             roster = yahoo_query.get_team_roster_player_stats_by_week(team_id=team_id, chosen_week=week)
 
             players_data = []
@@ -767,7 +749,7 @@ def register_team_tools(mcp: FastMCP, app_state: Dict[str, Any]):
                 if not game_id:
                     return {"error": f"No game_id found for {sport} {season}"}
 
-            yahoo_query = get_yahoo_query(league_id, game_id, sport)
+            yahoo_query = get_yahoo_query(league_id, app_state, game_id, sport)
             team_standings = yahoo_query.get_team_standings(team_id)
 
             # Use DataEnhancer for proper data extraction
@@ -841,7 +823,7 @@ def register_team_tools(mcp: FastMCP, app_state: Dict[str, Any]):
                 if not game_id:
                     return {"error": f"No game_id found for {sport} {season}"}
 
-            yahoo_query = get_yahoo_query(league_id, game_id, sport)
+            yahoo_query = get_yahoo_query(league_id, app_state, game_id, sport)
             team_stats = yahoo_query.get_team_stats(team_id)
 
             # Use DataEnhancer for proper data extraction
@@ -918,7 +900,7 @@ def register_team_tools(mcp: FastMCP, app_state: Dict[str, Any]):
                 if not game_id:
                     return {"error": f"No game_id found for {sport} {season}"}
 
-            yahoo_query = get_yahoo_query(league_id, game_id, sport)
+            yahoo_query = get_yahoo_query(league_id, app_state, game_id, sport)
             team_stats = yahoo_query.get_team_stats_by_week(team_id=team_id, chosen_week=week)
 
             result = {

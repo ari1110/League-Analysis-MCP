@@ -8,31 +8,14 @@ from typing import Dict, Any, Optional
 from yfpy import YahooFantasySportsQuery
 from fastmcp import FastMCP
 
+from .shared_utils import get_yahoo_query, handle_api_error
+
 logger = logging.getLogger(__name__)
 
 
 def register_utility_tools(mcp: FastMCP, app_state: Dict[str, Any]):
     """Register all MCP utility tools."""
 
-    def get_yahoo_query(league_id: str, game_id: Optional[str] = None, sport: str = "nfl") -> YahooFantasySportsQuery:
-        """Create a Yahoo Fantasy Sports Query object."""
-        auth_manager = app_state["auth_manager"]
-
-        if not auth_manager.is_configured():
-            raise ValueError("Yahoo authentication not configured. Run check_setup_status() to begin setup.")
-
-        auth_credentials = auth_manager.get_auth_credentials()
-
-        # Use game_id if provided, otherwise use current season
-        if game_id:
-            query_params = {**auth_credentials, 'game_id': game_id}
-        else:
-            query_params = {**auth_credentials, 'game_code': sport}
-
-        return YahooFantasySportsQuery(
-            league_id=league_id,
-            **query_params
-        )
 
     @mcp.tool()
     def get_all_yahoo_fantasy_game_keys() -> Dict[str, Any]:
@@ -51,7 +34,7 @@ def register_utility_tools(mcp: FastMCP, app_state: Dict[str, Any]):
             if cached_data:
                 return cached_data
 
-            yahoo_query = get_yahoo_query("temp", None, "nfl")  # Use NFL as default
+            yahoo_query = get_yahoo_query("temp", app_state, None, "nfl")  # Use NFL as default
             game_keys = yahoo_query.get_all_yahoo_fantasy_game_keys()
 
             keys_data = []
@@ -70,8 +53,7 @@ def register_utility_tools(mcp: FastMCP, app_state: Dict[str, Any]):
             return result
 
         except Exception as e:
-            logger.error(f"Error getting all Yahoo fantasy game keys: {e}")
-            return {"error": str(e)}
+            return handle_api_error("getting all Yahoo fantasy game keys", e)
 
     @mcp.tool()
     def get_current_game_info(sport: str = "nfl") -> Dict[str, Any]:
@@ -93,7 +75,7 @@ def register_utility_tools(mcp: FastMCP, app_state: Dict[str, Any]):
             if cached_data:
                 return cached_data
 
-            yahoo_query = get_yahoo_query("temp", None, sport)
+            yahoo_query = get_yahoo_query("temp", app_state, None, sport)
             game_info = yahoo_query.get_current_game_info()
 
             result = {
@@ -116,8 +98,7 @@ def register_utility_tools(mcp: FastMCP, app_state: Dict[str, Any]):
             return result
 
         except Exception as e:
-            logger.error(f"Error getting current game info: {e}")
-            return {"error": str(e)}
+            return handle_api_error("getting current game info", e)
 
     @mcp.tool()
     def get_current_game_metadata(sport: str = "nfl") -> Dict[str, Any]:
@@ -139,7 +120,7 @@ def register_utility_tools(mcp: FastMCP, app_state: Dict[str, Any]):
             if cached_data:
                 return cached_data
 
-            yahoo_query = get_yahoo_query("temp", None, sport)
+            yahoo_query = get_yahoo_query("temp", app_state, None, sport)
             metadata = yahoo_query.get_current_game_metadata()
 
             result = {
@@ -162,8 +143,7 @@ def register_utility_tools(mcp: FastMCP, app_state: Dict[str, Any]):
             return result
 
         except Exception as e:
-            logger.error(f"Error getting current game metadata: {e}")
-            return {"error": str(e)}
+            return handle_api_error("getting current game metadata", e)
 
     @mcp.tool()
     def get_current_user() -> Dict[str, Any]:
@@ -182,7 +162,7 @@ def register_utility_tools(mcp: FastMCP, app_state: Dict[str, Any]):
             if cached_data:
                 return cached_data
 
-            yahoo_query = get_yahoo_query("temp", None, "nfl")  # Use NFL as default
+            yahoo_query = get_yahoo_query("temp", app_state, None, "nfl")  # Use NFL as default
             user = yahoo_query.get_current_user()
 
             result = {
@@ -197,8 +177,7 @@ def register_utility_tools(mcp: FastMCP, app_state: Dict[str, Any]):
             return result
 
         except Exception as e:
-            logger.error(f"Error getting current user: {e}")
-            return {"error": str(e)}
+            return handle_api_error("getting current user", e)
 
     @mcp.tool()
     def get_response(league_id: str, resource_path: str, sport: str = "nfl",
@@ -223,7 +202,7 @@ def register_utility_tools(mcp: FastMCP, app_state: Dict[str, Any]):
                 if not game_id:
                     return {"error": f"No game_id found for {sport} {season}"}
 
-            yahoo_query = get_yahoo_query(league_id, game_id, sport)
+            yahoo_query = get_yahoo_query(league_id, app_state, game_id, sport)
             response = yahoo_query.get_response(resource_path)
 
             result = {
@@ -237,5 +216,4 @@ def register_utility_tools(mcp: FastMCP, app_state: Dict[str, Any]):
             return result
 
         except Exception as e:
-            logger.error(f"Error getting custom response: {e}")
-            return {"error": str(e)}
+            return handle_api_error("getting custom response", e)

@@ -8,6 +8,7 @@ from typing import Dict, Any, Optional
 from yfpy import YahooFantasySportsQuery
 from fastmcp import FastMCP
 from .enhancement_helpers import DataEnhancer
+from .shared_utils import get_yahoo_query, handle_api_error
 
 logger = logging.getLogger(__name__)
 
@@ -15,25 +16,6 @@ logger = logging.getLogger(__name__)
 def register_user_tools(mcp: FastMCP, app_state: Dict[str, Any]) -> None:
     """Register all MCP user tools."""
 
-    def get_yahoo_query(league_id: str, game_id: Optional[str] = None, sport: str = "nfl") -> YahooFantasySportsQuery:
-        """Create a Yahoo Fantasy Sports Query object."""
-        auth_manager = app_state["auth_manager"]
-
-        if not auth_manager.is_configured():
-            raise ValueError("Yahoo authentication not configured. Run check_setup_status() to begin setup.")
-
-        auth_credentials = auth_manager.get_auth_credentials()
-
-        # Use game_id if provided, otherwise use current season
-        if game_id:
-            query_params = {**auth_credentials, 'game_id': game_id}
-        else:
-            query_params = {**auth_credentials, 'game_code': sport}
-
-        return YahooFantasySportsQuery(
-            league_id=league_id,
-            **query_params
-        )
 
     @mcp.tool()
     def get_user_games(sport: str = "nfl", season: Optional[str] = None) -> Dict[str, Any]:
@@ -63,7 +45,7 @@ def register_user_tools(mcp: FastMCP, app_state: Dict[str, Any]) -> None:
                 if not game_id:
                     return {"error": f"No game_id found for {sport} {season}"}
 
-            yahoo_query = get_yahoo_query("temp", game_id, sport)  # League ID not needed for user games
+            yahoo_query = get_yahoo_query("temp", app_state, game_id, sport)  # League ID not needed for user games
             user_games = yahoo_query.get_user_games()
 
             games_data = []
@@ -128,7 +110,7 @@ def register_user_tools(mcp: FastMCP, app_state: Dict[str, Any]) -> None:
                 if not game_id:
                     return {"error": f"No game_id found for {sport} {season}"}
 
-            yahoo_query = get_yahoo_query("temp", game_id, sport)  # League ID not needed for user teams
+            yahoo_query = get_yahoo_query("temp", app_state, game_id, sport)  # League ID not needed for user teams
             user_teams = yahoo_query.get_user_teams()
 
             # Use DataEnhancer for proper data extraction

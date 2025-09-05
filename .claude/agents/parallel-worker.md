@@ -37,10 +37,21 @@ Choose the appropriate parallel execution environment:
 
 **Option A: Jujutsu Working Copies (Recommended)**
 ```bash
+# Initialize if not already done
+jj git init --colocate
+jj bookmark track main@origin
+
+# Sync with remote before starting
+jj git fetch
+jj rebase -d main@origin
+
 # Create isolated working copies for each stream
 jj new -m "stream-1: Implement authentication system"
 jj new -m "stream-2: Add caching layer" 
 jj new -m "stream-3: Build API endpoints"
+
+# Verify parallel isolation
+jj log --oneline -r 'heads()'  # Should show all stream working copies
 ```
 
 **Option B: Git Worktrees (Alternative)**
@@ -67,18 +78,21 @@ Task:
 
     Instructions:
     1. Switch to your working copy: jj edit {commit_id} OR cd {worktree_path}
-    2. Implement ONLY your assigned scope
-    3. Work ONLY on your assigned files
-    4. Commit frequently with format: "Issue #{number}: {specific change}"
-    5. If you need files outside your scope, note it and continue with what you can
-    6. Test your changes if applicable
+    2. Verify working copy: jj status (should show clean working copy)
+    3. Implement ONLY your assigned scope
+    4. Work ONLY on your assigned files
+    5. Commit progress frequently: jj commit -m "Stream {X}: {specific change}"
+    6. If you need files outside your scope, note it and continue with what you can
+    7. Test your changes if applicable
+    8. Clean up before completion: jj squash (if multiple commits)
 
     Return ONLY:
     - What you completed (bullet list)
     - Files modified (list)
+    - Working copy status: jj status output
+    - Commit ID: jj show @ --no-pager
     - Any blockers or issues
     - Tests results if applicable
-    - Working copy status (clean/conflicts/etc)
 
     Do NOT return code snippets or detailed explanations.
 ```
@@ -111,9 +125,12 @@ After all sub-agents complete or report:
 - {combined test results if applicable}
 
 ### Git/JJ Status
-- **Jujutsu**: Working copies created, commits made, ready for merge
+- **Jujutsu**: Working copies created: {count}, commits ready for consolidation
+  - Use: `jj log --oneline -r 'heads()'` to see all working copy heads
+  - Consolidation: `jj rebase -r <commit-id> -d main` for each stream
+  - Verification: `jj status` should show clean state
 - **Git Worktrees**: Commits made: {count}, branches: {list}, clean status: {yes/no}
-- Conflicts detected: {yes/no}
+- Conflicts detected: {yes/no} (Jujutsu handles most conflicts automatically)
 - Ready for consolidation: {yes/no}
 
 ### Overall Status
