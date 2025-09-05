@@ -994,3 +994,75 @@ def register_tools(mcp: FastMCP, app_state: Dict[str, Any]) -> None:
 
     # Register analytics tools
     register_analytics_tools(mcp, app_state)
+
+
+# Public API functions for testing and direct access
+from .tools_impl import (
+    get_league_info_impl,
+    get_standings_impl,
+    get_team_roster_impl,
+    get_matchups_impl
+)
+from .server import app_state
+
+
+def get_league_info(league_id: str, sport: str = "nfl", season: Optional[str] = None) -> Dict[str, Any]:
+    """
+    Public API function for get_league_info.
+    
+    Args:
+        league_id: Yahoo league ID
+        sport: Sport code (nfl, nba, mlb, nhl)
+        season: Specific season year (optional)
+        
+    Returns:
+        League information and settings
+    """
+    return get_league_info_impl(league_id, sport, season, app_state)
+
+
+def get_standings(league_id: str, sport: str = "nfl", season: Optional[str] = None) -> Dict[str, Any]:
+    """
+    Public API function for get_standings.
+    
+    Args:
+        league_id: Yahoo league ID
+        sport: Sport code (nfl, nba, mlb, nhl)
+        season: Specific season year (optional)
+        
+    Returns:
+        League standings information
+    """
+    return get_standings_impl(league_id, sport, season, app_state)
+
+
+def get_team_roster(league_id: str, team_id: str, sport: str = "nfl", season: Optional[str] = None) -> Dict[str, Any]:
+    """
+    Public API function for get_team_roster.
+    
+    Args:
+        league_id: Yahoo league ID
+        team_id: Team ID within the league
+        sport: Sport code (nfl, nba, mlb, nhl)
+        season: Specific season year (optional)
+        
+    Returns:
+        Team roster information
+    """
+    return get_team_roster_impl(league_id, team_id, sport, season, app_state)
+
+
+def get_matchups(league_id: str, sport: str = "nfl", week: Optional[int] = None, season: Optional[str] = None) -> Dict[str, Any]:
+    """
+    Public API function for get_matchups.
+    
+    Args:
+        league_id: Yahoo league ID
+        sport: Sport code (nfl, nba, mlb, nhl)
+        week: Week number (optional, uses current week if not provided)
+        season: Specific season year (optional)
+        
+    Returns:
+        Matchup information for the specified week
+    """
+    return get_matchups_impl(league_id, sport, week, season, app_state)
