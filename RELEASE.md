@@ -17,10 +17,9 @@ git push origin v0.1.2
 
 **What happens automatically:**
 1. ✅ **Tests** - Run on Python 3.10, 3.11, 3.12
-2. ✅ **Build** - Create wheel and source distributions
-3. ✅ **TestPyPI** - Publish to test environment first
-4. ✅ **PyPI** - Publish to production after TestPyPI success
-5. ✅ **GitHub Release** - Create release page with install instructions
+2. ✅ **Build** - Create wheel and source distributions  
+3. ✅ **PyPI** - Publish directly to production
+4. ✅ **GitHub Release** - Create release page with install instructions
 
 ### Option 2: Manual Workflow Trigger
 ```bash
@@ -40,9 +39,10 @@ gh workflow run publish.yml
 - [ ] Test locally: `uv build && python -m league_analysis_mcp_server`
 
 ### 2. Testing
-- [ ] Run local tests: `uv run python test_server.py`
+- [ ] Run local tests: `uv run python test_server.py`, `uv run python test_auth.py`, `uv run python test_startup.py`
 - [ ] Test PyPI installation: `uvx league-analysis-mcp-server`
 - [ ] Verify MCP client integration
+- [ ] Run type checking: `uv run pyright src/`
 
 ### 3. Documentation
 - [ ] Update README.md with new features
@@ -65,16 +65,10 @@ If automated release fails:
 # Build package
 uv build
 
-# Publish to TestPyPI
-UV_PUBLISH_TOKEN=<test-token> uv publish --publish-url https://test.pypi.org/legacy/
-
-# Test installation
-pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ league-analysis-mcp-server
-
-# Publish to PyPI
+# Publish directly to PyPI
 UV_PUBLISH_TOKEN=<prod-token> uv publish
 
-# Create GitHub release
+# Create GitHub release  
 gh release create vX.Y.Z --title "Release vX.Y.Z" --notes "See CHANGELOG.md for details"
 ```
 
@@ -89,6 +83,9 @@ After each release, verify:
 
 ## 🔄 Version History
 
+- **v0.3.0** - Major Phase 2 cleanup: module consolidation, type safety overhaul, advanced features
+- **v0.2.2** - Bug fixes and quality improvements preparing for v0.3.0
+- **v0.2.1** - Cache manager method fixes and API access improvements
 - **v0.1.6** - Enhanced test suite and code quality improvements
 - **v0.1.5** - Automated OAuth flow with callback server
 - **v0.1.4** - Critical OAuth redirect URI fix

@@ -7,6 +7,55 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2025-09-06
+
+### 🚀 **MAJOR UPDATE: Phase 2 Cleanup & Advanced Features**
+
+#### Added
+- **Enhanced OAuth Streamlining**: Updated redirect URI to `https://localhost:8080/` for better automated OAuth flow
+- **Module Consolidation**: New modular architecture with `team_tools.py`, `player_tools.py`, `game_tools.py`, and `utility_tools.py`
+- **Advanced Testing Framework**: Comprehensive test suite with type safety fixes across 6+ test files
+- **Tools Implementation Pattern**: New `tools_impl.py` architecture for better testability and separation of concerns
+- **Enhanced Data Processing**: Improved YFPY token compatibility and error handling
+
+#### Fixed
+- **74 Pyright Type Errors**: Complete type safety overhaul across the entire codebase
+- **Trade Analysis Bug Fixes**: Resolved calculation errors in trade likelihood predictions
+- **OAuth Flow Improvements**: Better token management and YFPY integration
+- **Cache Manager Enhancements**: Improved data retrieval and storage patterns
+- **Test Suite Compatibility**: All tests now work with current authentication system
+
+#### Enhanced
+- **Code Quality**: Major duplication elimination and unused code removal
+- **Type Safety**: Comprehensive type hints and error handling throughout
+- **Architecture**: Better separation between MCP tools and implementation logic
+- **Documentation**: Updated context files and development guidelines
+
+#### Technical Improvements
+- **Parallel Development Breakthrough**: Used Jujutsu working copies for conflict-free development
+- **Type Consistency**: All modules now pass pyright strict type checking
+- **Import Optimization**: Cleaned up circular imports and dependency management
+- **Error Handling**: More robust error reporting and user-friendly messages
+
+**Impact**: This major release establishes a solid foundation for future development with improved code quality, better testing, and enhanced user experience. The modular architecture enables easier maintenance and feature additions.
+
+## [0.2.2] - 2025-09-05
+
+### 🔧 **Bug Fixes & Quality Improvements**
+
+#### Fixed
+- **Type Safety Issues**: Resolved multiple pyright errors in test files and core modules
+- **Authentication Flow**: Improved OAuth callback server reliability
+- **Cache Performance**: Enhanced caching mechanisms for better data retrieval
+- **Module Imports**: Fixed circular dependency issues in several components
+
+#### Enhanced
+- **Test Coverage**: Improved test reliability and error handling
+- **Code Quality**: Reduced code duplication and improved maintainability
+- **Documentation**: Updated internal documentation and code comments
+
+**Impact**: Significant stability and quality improvements preparing for major v0.3.0 release.
+
 ## [0.2.1] - 2025-09-04
 
 ### 🔧 **Bug Fixes**
@@ -232,7 +281,10 @@ uv run python setup_complete.py
 }
 ```
 
-[Unreleased]: https://github.com/ari1110/League-Analysis-MCP/compare/v0.1.6...HEAD
+[Unreleased]: https://github.com/ari1110/League-Analysis-MCP/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/ari1110/League-Analysis-MCP/releases/tag/v0.3.0
+[0.2.2]: https://github.com/ari1110/League-Analysis-MCP/releases/tag/v0.2.2
+[0.2.1]: https://github.com/ari1110/League-Analysis-MCP/releases/tag/v0.2.1
 [0.1.6]: https://github.com/ari1110/League-Analysis-MCP/releases/tag/v0.1.6
 [0.1.5]: https://github.com/ari1110/League-Analysis-MCP/releases/tag/v0.1.5
 [0.1.4]: https://github.com/ari1110/League-Analysis-MCP/releases/tag/v0.1.4
