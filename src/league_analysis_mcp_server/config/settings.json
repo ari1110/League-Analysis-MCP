@@ -1,7 +1,7 @@
 {
   "server": {
     "name": "league-analysis-mcp",
-    "version": "0.3.0",
+    "version": "0.3.1",
     "description": "MCP server for Yahoo Fantasy Sports analysis with historical data support"
   },
   "default_league": {
