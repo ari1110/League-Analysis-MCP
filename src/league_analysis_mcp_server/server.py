@@ -15,7 +15,6 @@ from .tools import register_tools
 from .team_tools import register_team_tools
 from .player_tools import register_player_tools
 from .game_tools import register_game_tools
-from .user_tools import register_user_tools
 from .utility_tools import register_utility_tools
 from .resources import register_resources
 from .oauth_callback_server import automated_oauth_flow
@@ -333,160 +332,9 @@ def save_yahoo_credentials(consumer_key: str, consumer_secret: str) -> Dict[str,
         }
 
 
-@mcp.tool()
-def start_oauth_flow() -> Dict[str, Any]:
-    """
-    Start the Yahoo OAuth authorization flow.
-
-    Returns:
-        Authorization URL and instructions for completing OAuth
-    """
-    auth_manager = app_state["auth_manager"]
-
-    if not auth_manager.consumer_key:
-        return {
-            "status": "error",
-            "message": "Consumer key not found. Save credentials first.",
-            "next_step": "Run save_yahoo_credentials() with your app credentials"
-        }
-
-    try:
-        # Generate authorization URL
-        auth_url = auth_manager.get_authorization_url()
-
-        return {
-            "status": "ready",
-            "message": "OAuth flow started. Please visit the URL below.",
-            "authorization_url": auth_url,
-            "instructions": [
-                "1. Click or copy the authorization URL above",
-                "2. Sign in to Yahoo (use the same account as your fantasy leagues)",
-                "3. Click 'Agree' to authorize League Analysis MCP",
-                "4. Copy the verification code from the success page",
-                "5. Use complete_oauth_flow() with your verification code"
-            ],
-            "next_tool": "complete_oauth_flow(verification_code)"
-        }
-
-    except Exception as e:
-        return {
-            "status": "error",
-            "message": f"Failed to start OAuth flow: {str(e)}",
-            "next_step": "Check your consumer credentials and try again"
-        }
 
 
-@mcp.tool()
-def complete_oauth_flow(verification_code: str) -> Dict[str, Any]:
-    """
-    Complete the Yahoo OAuth flow with the verification code.
 
-    This function now only handles token exchange for better isolation and debugging.
-    Connection testing should be done separately using test_yahoo_connection().
-
-    Args:
-        verification_code: The verification code from Yahoo's authorization page
-
-    Returns:
-        OAuth token exchange status (connection testing removed for debugging)
-    """
-    if not verification_code:
-        return {
-            "status": "error",
-            "message": "Verification code is required",
-            "next_step": "Get the verification code from Yahoo and try again"
-        }
-
-    auth_manager = app_state["auth_manager"]
-
-    try:
-        # Exchange verification code for tokens
-        success = auth_manager.exchange_code_for_tokens(verification_code)
-
-        if success:
-            return {
-                "status": "success",
-                "message": "Yahoo OAuth token exchange completed successfully!",
-                "details": "Tokens have been saved. Connection testing has been separated for better isolation.",
-                "next_steps": [
-                    "Token exchange is complete! Next steps:",
-                    "• Test your connection using test_yahoo_connection() tool",
-                    "• Or try get_league_info(league_id, sport) with a real league"
-                ],
-                "token_status": auth_manager.get_token_status(),
-                "note": "Connection testing removed to isolate OAuth token exchange from YFPY initialization"
-            }
-        else:
-            return {
-                "status": "error",
-                "message": "Failed to exchange verification code for tokens",
-                "next_step": "Verify the verification code is correct and hasn't expired"
-            }
-
-    except Exception as e:
-        return {
-            "status": "error",
-            "message": f"OAuth completion failed: {str(e)}",
-            "next_step": "Check the verification code and try again"
-        }
-
-
-@mcp.tool()
-def test_yahoo_connection() -> Dict[str, Any]:
-    """
-    Test the Yahoo API connection and return detailed status.
-
-    Returns:
-        Connection test results and troubleshooting information
-    """
-    auth_manager = app_state["auth_manager"]
-
-    # Get comprehensive status
-    setup_status = check_setup_status()
-
-    if setup_status["setup_state"] != "complete":
-        return {
-            "status": "not_configured",
-            "message": "Authentication not fully configured",
-            "current_state": setup_status["setup_state"],
-            "next_step": setup_status["next_step"]
-        }
-
-    try:
-        # Test actual API connection
-        test_result = auth_manager.test_connection()
-        token_status = auth_manager.get_token_status()
-
-        if test_result:
-            return {
-                "status": "success",
-                "message": "✅ Yahoo API connection is working perfectly!",
-                "token_status": token_status,
-                "next_steps": [
-                    "You can now use all fantasy sports tools",
-                    "Try get_league_info(league_id, sport) with your league"
-                ]
-            }
-        else:
-            return {
-                "status": "warning",
-                "message": "⚠️ Connection test was inconclusive",
-                "details": "This may be normal without a specific league ID",
-                "token_status": token_status,
-                "next_step": "Try using get_league_info() with a real league to fully test"
-            }
-
-    except Exception as e:
-        return {
-            "status": "error",
-            "message": f"❌ Connection test failed: {str(e)}",
-            "token_status": auth_manager.get_token_status(),
-            "troubleshooting": [
-                "1. Check if your tokens are expired (they refresh automatically)",
-                "2. Verify your Yahoo account has access to fantasy leagues",
-                "3. Try refresh_yahoo_token() to force a token refresh"
-            ]
-        }
 
 
 @mcp.tool()
@@ -591,7 +439,6 @@ def initialize_server():
     register_team_tools(mcp, app_state)
     register_player_tools(mcp, app_state)
     register_game_tools(mcp, app_state)
-    register_user_tools(mcp, app_state)
     register_utility_tools(mcp, app_state)
     register_resources(mcp, app_state)
 

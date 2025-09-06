@@ -386,30 +386,23 @@ Request → Authentication Check → Cache Lookup → Yahoo API Call (if needed)
 ### Authentication Development
 - All new auth features should use the Enhanced Auth Manager
 - **OAuth redirect URI**: `https://localhost:8080/` - must match Yahoo Developer app configuration exactly
-- **Automated OAuth**: Preferred method using `start_automated_oauth_flow()` - creates HTTPS server to capture code
-- **Manual OAuth**: Fallback using `start_oauth_flow()` + `complete_oauth_flow(code)` 
-- **Token separation**: OAuth token exchange is isolated from YFPY connection testing for better debugging
+- **Automated OAuth**: Uses `start_automated_oauth_flow()` - creates HTTPS server to capture code automatically  
+- **Complete automation**: No manual steps required - handles entire OAuth flow
+- **Token handling**: OAuth token exchange and storage handled automatically
 - Use conversational MCP tools for user setup rather than command-line scripts
 
-### OAuth Setup Methods
-**Method 1: Automated (Recommended)**
+### OAuth Setup Method
+**Automated OAuth (Recommended)**
 ```
 1. save_yahoo_credentials(key, secret)
 2. start_automated_oauth_flow()  # Opens browser, captures code automatically
 ```
 
-**Method 2: Manual (Fallback)**  
-```
-1. save_yahoo_credentials(key, secret)
-2. start_oauth_flow()  # Get authorization URL
-3. Visit URL, get code manually
-4. complete_oauth_flow(verification_code)
-```
-
-**Method 3: Connection Testing (Separate)**
-```
-5. test_yahoo_connection()  # Test YFPY integration after token exchange
-```
+This is the only OAuth method needed - it handles the complete flow automatically by:
+- Opening your browser to Yahoo's authorization page
+- Creating a local HTTPS server to capture the authorization code
+- Exchanging the code for tokens automatically
+- No manual steps required!
 
 ### Caching Strategy
 - Historical data (draft results, past seasons): Cache permanently

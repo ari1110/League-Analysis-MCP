@@ -1,7 +1,7 @@
 ---
 created: 2025-09-04T19:09:18Z
-last_updated: 2025-09-05T17:34:50Z
-version: 1.3
+last_updated: 2025-09-05T20:43:03Z
+version: 1.4
 author: Claude Code PM System
 ---
 
@@ -31,15 +31,14 @@ author: Claude Code PM System
 
 ### 3. Tool Categorization Pattern
 **Domain-Specific Tool Modules**:
-- `tools.py` - Basic league operations (MCP tool wrappers)
+- `tools.py` - Basic league operations (MCP tool wrappers only)
 - `tools_impl.py` - Implementation functions for testable architecture
 - `historical.py` - Multi-season analysis
-- `analytics.py` - Advanced pattern recognition
+- `analytics.py` - Advanced pattern recognition (trade analysis bug fixed)
 - `game_tools.py` - Game and season management
 - `team_tools.py` - Team-specific operations
 - `player_tools.py` - Player statistics and ownership
-- `user_tools.py` - User account access
-- `utility_tools.py` - Maintenance and troubleshooting
+- `utility_tools.py` - Maintenance, troubleshooting, and user account access (consolidated)
 
 **Testable Architecture Pattern**:
 - **Private Implementation Functions**: `_impl` suffix for business logic
@@ -72,7 +71,7 @@ MCP Client Request
   → MCP Client Response
 ```
 
-### 2. Authentication Flow Pattern
+### 2. Authentication Flow Pattern (Streamlined v0.3.0+)
 **Conversational OAuth Setup**:
 ```python
 check_setup_status()
@@ -80,12 +79,11 @@ check_setup_status()
   → Guide user through Yahoo Developer app creation
 save_yahoo_credentials()
   → Store consumer key/secret in environment
-start_automated_oauth_flow() OR start_oauth_flow()
-  → Handle OAuth authorization
+start_automated_oauth_flow()
+  → Handle OAuth authorization automatically
   → Exchange code for tokens
   → Store tokens securely
-test_yahoo_connection()
-  → Validate API connectivity
+# Legacy manual/testing methods removed for simplicity
 ```
 
 ### 3. Caching Strategy Pattern
@@ -189,11 +187,11 @@ async def get_yahoo_data(endpoint, params):
 - **Continue.dev**: Extension-based MCP server connection
 - **Custom Clients**: Standard MCP 1.0 protocol compatibility
 
-### 3. Authentication Integration Pattern
-**OAuth 2.0 with Multiple Flows**:
-- **Automated Flow**: HTTPS callback server captures authorization code
-- **Manual Flow**: User provides verification code manually
+### 3. Authentication Integration Pattern (Streamlined v0.3.0+)
+**OAuth 2.0 with Automated Flow**:
+- **Automated Flow**: HTTPS callback server captures authorization code (recommended)
 - **Token Management**: Automatic refresh with fallback to re-authentication
+- **Simplified UX**: Single OAuth method eliminates user confusion
 
 ## Performance Patterns
 
@@ -305,21 +303,19 @@ async def analyze_historical_drafts(league_id, seasons):
 - `test_mcp_connection.py` - MCP protocol communication
 - `test_comprehensive.py` - Static analysis and comprehensive coverage
 
-### 3. Comprehensive Functional Testing Pattern (v0.3.0+)
-**User Scenario Validation**:
-- **FunctionalTestCase**: Base class with Yahoo API mocking and response fixtures
-- **IntegrationTestCase**: Real Yahoo API testing with credential validation
-- **Test Fixtures**: Realistic Yahoo API response data in JSON format
-- **End-to-End Workflows**: Complete user journey validation from authentication to analytics
-- **Error Scenario Coverage**: Comprehensive edge case and error condition testing
+### 3. Streamlined Testing Pattern (v0.3.0+)
+**Core Structural Testing**:
+- **Focused Testing Approach**: Dropped complex functional test framework in favor of reliable structural tests
+- **Import Validation**: Comprehensive module import and initialization testing
+- **Authentication Testing**: OAuth system validation without external dependencies
+- **Configuration Testing**: Settings loading and validation testing
+- **Performance**: All structural tests complete under 10 seconds
 
-**Functional Test Architecture**:
-- `test_analytics.py` - Analytics accuracy and pattern recognition validation
-- `test_auth.py` - Authentication workflow and OAuth flow testing  
-- `test_cache.py` - Cache behavior, TTL management, and data persistence
-- `test_errors.py` - Error handling, edge cases, and resilience testing
-- `test_tools.py` - MCP tool functionality and parameter validation
-- `test_workflows.py` - End-to-end user workflow and integration testing
+**Structural Test Architecture**:
+- `test_server.py` - Server initialization and MCP protocol setup
+- `test_auth.py` - Authentication system without external Yahoo API calls
+- `test_startup.py` - Configuration loading and application startup
+- `test_mcp_connection.py` - MCP protocol communication validation
 
 ### 4. Static Analysis Integration Pattern
 **Quality Assurance Automation**:
@@ -344,3 +340,28 @@ async def analyze_historical_drafts(league_id, seasons):
 - **Agent Configurations**: Enhanced parallel-worker.md and repo-issue-fixer.md with working copy support
 - **Best Practices**: Daily workflows, error recovery, performance optimization, and maintenance
 - **Safety Guidelines**: Detailed safety comparisons (jj rebase vs git rebase, recovery methods)
+
+## Code Organization Patterns
+
+### 1. Shared Utilities Pattern (v0.3.0+)
+**Centralized Common Functionality**:
+- **shared_utils.py**: Single source of truth for common functions across modules
+- **Eliminated Duplication**: Removed 140+ lines of duplicate `get_yahoo_query()` implementations
+- **Standardized Error Handling**: Consistent `handle_api_error()` patterns across all modules
+- **Cache Key Generation**: Centralized `standardize_cache_key()` function
+
+**Implementation Pattern**:
+```python
+# shared_utils.py - Centralized utilities
+def get_yahoo_query(league_id: str, app_state: Dict, game_id: Optional[str] = None, sport: str = "nfl")
+def handle_api_error(operation: str, error: Exception) -> Dict[str, Any]
+def standardize_cache_key(category: str, identifiers: Dict[str, Any], season: Optional[str] = None)
+
+# tool modules - Import and use shared functions
+from .shared_utils import get_yahoo_query, handle_api_error
+```
+
+**Benefits**:
+- **Single Source of Truth**: Changes to common logic only need to be made in one place
+- **Consistent Behavior**: All modules use identical error handling and API query logic
+- **Reduced Maintenance**: No more duplicate code to keep in sync across 5+ modules

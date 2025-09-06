@@ -92,6 +92,7 @@ author: Claude Code PM System
   - **Git integration**: `jj git push` for seamless Git repository updates
 - **repo-issue-fixer agent** - Automated systematic issue resolution with batch verification
 - **Testable Architecture Pattern** - Private `_impl` functions + public API + MCP wrappers
+- **Shared Utilities Module** - Centralized common functionality (shared_utils.py) eliminating code duplication
 - **Verified Command Set** - 15+ verified Jujutsu commands for comprehensive parallel workflows
 
 ## Architecture Technologies

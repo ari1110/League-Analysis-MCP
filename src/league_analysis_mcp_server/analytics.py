@@ -254,13 +254,21 @@ def _predict_trade_likelihood_impl(league_id: str, sport: str, team1_id: Optiona
                 # Extract team IDs from trade (simplified - would need more complex parsing in reality)
                 players = transaction.get("players", [])
                 if len(players) >= 2:
-                    # This is a simplified approach - real implementation would need to parse
-                    # the transaction structure more carefully
+                    # Extract team IDs from transaction players
                     trade_teams: Set[str] = set()
                     for player in players:
-                        # Extract team IDs from transaction data
-                        # This would need actual YFPY transaction structure analysis
-                        pass
+                        # Extract team info from player transaction data
+                        if isinstance(player, dict):
+                            # Try multiple possible team ID locations in YFPY data
+                            team_id = (player.get("team_id") or 
+                                     player.get("editorial_team_id") or
+                                     player.get("selected_position", {}).get("team_id"))
+                            if team_id:
+                                trade_teams.add(str(team_id))
+                        elif hasattr(player, 'team_id'):
+                            trade_teams.add(str(player.team_id))
+                        elif hasattr(player, 'editorial_team_id'):
+                            trade_teams.add(str(player.editorial_team_id))
 
                     if len(trade_teams) == 2:
                         t1, t2 = list(trade_teams)

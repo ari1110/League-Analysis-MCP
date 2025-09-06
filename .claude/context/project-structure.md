@@ -43,8 +43,8 @@ src/league_analysis_mcp_server/
 ├── game_tools.py           # Game-related MCP tools
 ├── team_tools.py           # Team-specific MCP tools  
 ├── player_tools.py         # Player-specific MCP tools
-├── user_tools.py           # User account MCP tools
-├── utility_tools.py        # Utility and maintenance MCP tools
+├── utility_tools.py        # Utility and user account MCP tools (consolidated)
+├── shared_utils.py          # Shared utility functions (centralized common code)
 └── enhancement_helpers.py   # Data enhancement utilities
 ```
 
