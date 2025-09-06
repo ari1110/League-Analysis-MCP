@@ -37,10 +37,15 @@ def register_historical_tools(mcp: FastMCP, app_state: Dict[str, Any]):
 
         auth_credentials = auth_manager.get_auth_credentials()
 
+        # Use game_id if provided, otherwise fall back to game_code
+        if game_id:
+            query_params = {**auth_credentials, 'game_id': int(game_id) if isinstance(game_id, str) else game_id}
+        else:
+            query_params = {**auth_credentials, 'game_code': sport}
+
         return YahooFantasySportsQuery(
             league_id=league_id,
-            game_id=int(game_id) if isinstance(game_id, str) else game_id,
-            **auth_credentials
+            **query_params
         )
 
     @mcp.tool()

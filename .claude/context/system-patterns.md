@@ -1,7 +1,7 @@
 ---
 created: 2025-09-04T19:09:18Z
-last_updated: 2025-09-05T20:43:03Z
-version: 1.4
+last_updated: 2025-09-06T16:29:31Z
+version: 1.5
 author: Claude Code PM System
 ---
 
@@ -365,3 +365,36 @@ from .shared_utils import get_yahoo_query, handle_api_error
 - **Single Source of Truth**: Changes to common logic only need to be made in one place
 - **Consistent Behavior**: All modules use identical error handling and API query logic
 - **Reduced Maintenance**: No more duplicate code to keep in sync across 5+ modules
+
+## Parallel Cleanup Pattern (v0.3.1)
+
+### 4-Agent Parallel Development Methodology
+**Pattern**: Simultaneous specialized cleanup using Jujutsu working copies
+
+**Implementation**:
+```bash
+# Create isolated working copies for parallel agents
+jj new -m "agent-1-docs: Documentation cleanup"
+jj new -m "agent-2-tools: MCP tool review" 
+jj new -m "agent-3-files: File/directory cleanup"
+jj new -m "agent-4-deps: Package dependency audit"
+
+# Launch parallel agents via multiple Task tool calls
+# Each agent works in isolation with zero conflicts
+
+# Consolidate via conflict-free rebase
+jj rebase -r agent-1-commit -d main
+jj rebase -r agent-2-commit -d main  
+jj rebase -r agent-3-commit -d main
+jj rebase -r agent-4-commit -d main
+```
+
+**Results**:
+- **Documentation**: Complete accuracy verification and updates
+- **Tool Verification**: All 56 MCP tools audited for description accuracy
+- **File Cleanup**: Removed build artifacts, unused files, __pycache__ directories  
+- **Dependency Optimization**: Removed unused packages (~60MB reduction)
+- **Zero Conflicts**: Complete isolation enabled simultaneous work
+- **Test Validation**: All functionality preserved after cleanup
+
+This pattern proves effective for comprehensive codebase maintenance requiring multiple specialized cleanup streams.

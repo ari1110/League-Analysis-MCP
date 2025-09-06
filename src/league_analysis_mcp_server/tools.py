@@ -284,18 +284,18 @@ def register_tools(mcp: FastMCP, app_state: Dict[str, Any]) -> None:
             yahoo_query = get_yahoo_query(league_id, game_id, sport)
             roster = yahoo_query.get_team_roster_by_week(team_id, 1)  # Default to week 1
             
-            # Use DataEnhancer for proper data extraction
+            # Use DataEnhancer for proper roster data extraction
             data_enhancer = DataEnhancer(yahoo_query, cache_manager)
             players_data = []
             for player in roster:
-                enhanced_player = data_enhancer.enhance_player_stats(player)
+                enhanced_player = data_enhancer.enhance_roster_player(player)
                 player_data = {
                     "player_id": enhanced_player.get("player_id", "Unknown"),
                     "name": enhanced_player.get("player_name", "Unknown"),
                     "position_type": enhanced_player.get("position_type", "Unknown"),
                     "eligible_positions": enhanced_player.get("eligible_positions", []),
                     "selected_position": enhanced_player.get("selected_position", {}),
-                    "team_abbr": enhanced_player.get("editorial_team_abbr", "Unknown")
+                    "team_abbr": enhanced_player.get("team_abbr", "Unknown")
                 }
                 players_data.append(player_data)
 

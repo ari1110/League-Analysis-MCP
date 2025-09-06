@@ -1,0 +1,20 @@
+{
+  "mcpServers": {
+    "league-analysis-mcp-local": {
+      "command": "uv",
+      "args": [
+        "run",
+        "python",
+        "-m",
+        "src.league_analysis_mcp_server"
+      ],
+      "cwd": "C:\\Users\\ari11\\C-drive-projects\\League-Analysis-MCP",
+      "env": {
+        "YAHOO_CONSUMER_KEY": "dj0yJmk9bm9hd2JBbmRmdE1yJmQ9WVdrOWRXUldWRTloVDJ3bWNHbzlNQT09JnM9Y29uc3VtZXJzZWNyZXQmc3Y9MCZ4PTM0",
+        "YAHOO_CONSUMER_SECRET": "a0b58468496a5520b73b02080a48ff26778102a9",
+        "YAHOO_ACCESS_TOKEN": "your_access_token_if_available",
+        "YAHOO_REFRESH_TOKEN": "your_refresh_token_if_available"
+      }
+    }
+  }
+}

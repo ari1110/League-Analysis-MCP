@@ -1,7 +1,7 @@
 ---
 created: 2025-09-04T19:09:18Z
-last_updated: 2025-09-04T23:12:23Z
-version: 1.2
+last_updated: 2025-09-06T16:29:31Z
+version: 1.3
 author: Claude Code PM System
 ---
 
@@ -46,15 +46,11 @@ author: Claude Code PM System
   - Configuration validation and parsing
   - API response validation and transformation
 
-- **Pandas 2.0+** - Data analysis and transformation
-  - Historical data processing and aggregation
-  - Statistical analysis for manager profiling
-  - Draft strategy analysis and pattern recognition
-
 #### Authentication & Security
-- **Cryptography 3.0+** - SSL certificate generation for OAuth callback server
+- **Cryptography 3.0.0+** - SSL certificate generation for OAuth callback server (optional extra)
   - Self-signed certificate generation for localhost HTTPS
-  - Required for automated OAuth flow with callback server
+  - Required only for automated OAuth flow with callback server
+  - Moved to optional dependencies for reduced base installation size
 
 - **python-dotenv 1.0.0+** - Environment variable management
   - OAuth token storage and configuration
@@ -64,10 +60,6 @@ author: Claude Code PM System
 - **Requests 2.31.0+** - HTTP client for Yahoo API calls
   - Reliable HTTP request handling
   - Session management and connection pooling
-
-- **asyncio-throttle 1.0.0+** - Rate limiting for API requests
-  - Respect Yahoo API rate limits (60 requests/minute)
-  - Prevent API quota exhaustion
 
 ### Development & Quality Tools
 
@@ -258,3 +250,16 @@ uv build                                         # Build package
 - **Certificate Validation**: Enabled for all HTTPS requests
 - **Local Server**: Callback server only active during OAuth flow
 - **Port Management**: Uses standard port 8080 for OAuth callback
+
+## Dependency Optimization (v0.3.1+)
+
+### Removed Dependencies
+- **pandas** - Removed unused data analysis library (~50MB savings)
+- **asyncio-throttle** - Removed unused rate limiting library (~5MB savings)
+
+### Optional Dependencies
+- **cryptography** - Moved to optional extras for OAuth callback server SSL
+- Total installation size reduced by approximately 60MB while maintaining full functionality
+
+### Development Dependencies
+All development tools (pytest, mypy, pyright, etc.) moved to optional `dev` extras for lean production installations.

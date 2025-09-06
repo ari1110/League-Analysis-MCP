@@ -35,34 +35,22 @@ def get_yahoo_query(league_id: str, app_state: Dict, game_id: Optional[str] = No
         if not auth_manager:
             raise Exception("Authentication manager not found in app_state")
         
-        credentials = auth_manager.get_yahoo_credentials()
-        if not credentials:
-            raise Exception("Yahoo credentials not available")
+        if not auth_manager.is_configured():
+            raise ValueError("Yahoo authentication not configured. Run check_setup_status() to begin setup.")
             
-        # Resolve game_id if not provided
-        if not game_id:
-            game_ids = app_state.get("game_ids", {})
-            if sport in game_ids:
-                # Use current season's game ID
-                current_games = game_ids[sport]
-                if current_games:
-                    # Get the most recent game ID (highest year)
-                    latest_year = max(current_games.keys())
-                    game_id = current_games[latest_year]
-                else:
-                    raise Exception(f"No game IDs available for sport: {sport}")
-            else:
-                raise Exception(f"Sport not supported: {sport}")
+        auth_credentials = auth_manager.get_auth_credentials()
+        
+        # Use game_id if provided, otherwise use current season with game_code
+        if game_id:
+            query_params = {**auth_credentials, 'game_id': game_id}
+        else:
+            # For current season queries, always use game_code (like tools.py does)
+            query_params = {**auth_credentials, 'game_code': sport}
         
         # Create query object
         yahoo_query = YahooFantasySportsQuery(
             league_id=league_id,
-            game_id=game_id,
-            consumer_key=credentials["consumer_key"],
-            consumer_secret=credentials["consumer_secret"],
-            access_token=credentials.get("access_token"),
-            access_token_secret=credentials.get("access_token_secret"),
-            refresh_token=credentials.get("refresh_token")
+            **query_params
         )
         
         logger.debug(f"Created Yahoo query for league {league_id}, sport {sport}, game_id {game_id}")
